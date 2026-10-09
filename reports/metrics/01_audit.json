@@ -1,0 +1,206 @@
+{
+  "source": "real",
+  "shape": {
+    "impressions": 9917530,
+    "searches": 399344,
+    "hotels": 136886,
+    "destinations": 23715,
+    "sites": 34,
+    "date_min": "2012-11-01",
+    "date_max": "2013-06-30"
+  },
+  "arms": {
+    "algorithm": {
+      "searches": 277798,
+      "impressions": 6977878,
+      "share_of_searches": 0.6956,
+      "searches_with_click": 1.0,
+      "searches_with_booking": 0.9386,
+      "clicks_per_search": 1.1041,
+      "median_results": 30.0
+    },
+    "random": {
+      "searches": 121546,
+      "impressions": 2939652,
+      "share_of_searches": 0.3044,
+      "searches_with_click": 1.0,
+      "searches_with_booking": 0.1304,
+      "clicks_per_search": 1.1268,
+      "median_results": 28.0
+    }
+  },
+  "selection": {
+    "searches_with_click": 1.0,
+    "max_bookings_per_search": 1,
+    "bookings_without_click": 0
+  },
+  "reserved_slots_vs_neighbours": {
+    "algorithm": {
+      "5": 0.0614,
+      "11": 0.0835,
+      "17": 0.0939,
+      "23": 0.1001
+    },
+    "random": {
+      "5": 0.016,
+      "11": 0.0184,
+      "17": 0.0202,
+      "23": 0.0208
+    }
+  },
+  "skipped_slots_per_search": {
+    "0": 4564,
+    "1": 40458,
+    "2": 35043,
+    "3": 35287,
+    "4": 278421,
+    "5": 1887,
+    "6": 832,
+    "7": 557,
+    "8": 448,
+    "9": 335,
+    "10": 254,
+    "11": 198,
+    "12": 177,
+    "13": 121,
+    "14": 102,
+    "15": 107,
+    "16": 72,
+    "17": 79,
+    "18": 70,
+    "19": 63,
+    "20": 41,
+    "21": 36,
+    "22": 36,
+    "23": 41,
+    "24": 24,
+    "25": 24,
+    "26": 22,
+    "27": 12,
+    "28": 13,
+    "29": 5,
+    "30": 6,
+    "31": 4,
+    "32": 4,
+    "33": 1
+  },
+  "prices": {
+    "quantiles": {
+      "0.01": 34.0,
+      "0.05": 51.0,
+      "0.25": 85.0,
+      "0.5": 122.07,
+      "0.75": 185.0,
+      "0.95": 356.0,
+      "0.99": 599.0,
+      "0.999": 2132.86
+    },
+    "max": 19726328.0,
+    "impressions_price_le_0": 54,
+    "share_above_cap": 0.000575,
+    "cap": 5000.0,
+    "share_above_10x_search_median": 0.000326,
+    "median_by_length_of_stay": {
+      "1": 112.0,
+      "2": 125.0,
+      "3": 132.8,
+      "4": 141.0,
+      "5": 145.0,
+      "6": 148.0,
+      "7": 144.6
+    }
+  },
+  "price_sorted_share": {
+    "algorithm": 0.0364,
+    "random": 0.0549
+  },
+  "balance_within_search_corr": {
+    "price_ok": {
+      "algorithm": {
+        "prop_starrating": -0.2406,
+        "prop_review_score": -0.1463,
+        "prop_location_score1": -0.1103,
+        "promotion_flag": -0.2148,
+        "price_usd": -0.0033
+      },
+      "random": {
+        "prop_starrating": -0.0765,
+        "prop_review_score": -0.024,
+        "prop_location_score1": -0.0113,
+        "promotion_flag": -0.0296,
+        "price_usd": -0.0004
+      }
+    },
+    "clean": {
+      "algorithm": {
+        "prop_starrating": -0.2599,
+        "prop_review_score": -0.1606,
+        "prop_location_score1": -0.1171,
+        "promotion_flag": -0.2203,
+        "price_usd": -0.0179
+      },
+      "random": {
+        "prop_starrating": -0.098,
+        "prop_review_score": -0.0366,
+        "prop_location_score1": -0.0158,
+        "promotion_flag": -0.0279,
+        "price_usd": -0.0199
+      }
+    },
+    "clean_without_star_sorted": {
+      "algorithm": {
+        "prop_starrating": -0.259,
+        "prop_review_score": -0.1604,
+        "prop_location_score1": -0.1172,
+        "promotion_flag": -0.2204,
+        "price_usd": -0.0174
+      },
+      "random": {
+        "prop_starrating": -0.097,
+        "prop_review_score": -0.0363,
+        "prop_location_score1": -0.0158,
+        "promotion_flag": -0.0278,
+        "price_usd": -0.0194
+      }
+    }
+  },
+  "star_sorted_share": {
+    "algorithm": 0.0062,
+    "random": 0.0029
+  },
+  "stars_minus_search_mean_by_position": {
+    "algorithm order": {
+      "(0, 4]": 0.3266,
+      "(4, 10]": 0.1351,
+      "(10, 20]": -0.0038,
+      "(20, 30]": -0.1533,
+      "(30, 40]": -0.2845
+    },
+    "random order": {
+      "(0, 4]": 0.1209,
+      "(4, 10]": 0.0507,
+      "(10, 20]": -0.0025,
+      "(20, 30]": -0.0614,
+      "(30, 40]": -0.114
+    }
+  },
+  "analysis_sample": {
+    "rule": "drop searches with any price outside (0, 5,000]; drop searches sorted by price (within-search rank correlation of price with position >= 0.95)",
+    "searches_bad_price": 538,
+    "searches_price_sorted": 16773,
+    "searches_kept": {
+      "algorithm": 267352,
+      "random": 114681
+    },
+    "impressions_kept": 9497418
+  },
+  "missing_share": {
+    "gross_bookings_usd": 0.9721,
+    "visitor_hist_starrating": 0.9491,
+    "visitor_hist_adr_usd": 0.9488,
+    "srch_query_affinity_score": 0.9359,
+    "orig_destination_distance": 0.3243,
+    "prop_location_score2": 0.2196,
+    "prop_review_score": 0.0015
+  }
+}

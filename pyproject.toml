@@ -1,0 +1,19 @@
+[project]
+name = "hotelrank"
+version = "0.1.0"
+description = "Position effects, choice drivers and ranking policies on Expedia's hotel-search logs"
+requires-python = ">=3.10"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+
+[tool.ruff]
+line-length = 120
+src = ["src"]
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F"]
+
+[tool.ruff.lint.per-file-ignores]
+"notebooks/*.py" = ["E402"]

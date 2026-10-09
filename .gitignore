@@ -1,0 +1,13 @@
+# Raw data is from the Kaggle competition "Personalize Expedia Hotel Searches - ICDM 2013"
+# and is used under the competition's rules. It may not be redistributed. Never commit it.
+data/raw/*
+!data/raw/README.md
+data/interim/
+data/processed/
+__pycache__/
+.ipynb_checkpoints/
+.env
+.pytest_cache/
+.ruff_cache/
+*.parquet.partial
+.vscode/
