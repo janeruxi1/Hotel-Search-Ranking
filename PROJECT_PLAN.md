@@ -20,9 +20,12 @@ order**. That randomized slice is the project's lever: a real experiment inside 
 
 ## Positioning — causal inference and decision science first
 
-Headline framing: *"Expedia's ranking makes top positions look 22× better than position 30.
-Its own randomized traffic says the true effect is about 7×. Here is what that bias costs,
-what actually drives bookings, and which ranking to test next."*
+Headline framing: *"Expedia's ranking makes position 1 look 17× better than position 30 for
+clicks. Its own randomized traffic says about 5× (4.4× after adjusting for a residual tilt).
+Here is what that bias costs, what actually drives bookings, and which ranking to test next."*
+(Numbers from `reports/metrics/02_position_effects.json`, on searches that fill every slot
+from 1 to 30. The profile's first pooled figures, 22× and 7×, mixed in a composition effect:
+bottom positions exist only in long lists, where each hotel's click share is lower.)
 
 - Leads with the identification problem (better hotels are ranked higher, so naive
   position effects are confounded), not with learning-to-rank leaderboard scores.
