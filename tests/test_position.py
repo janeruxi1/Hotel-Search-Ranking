@@ -91,3 +91,16 @@ def test_analysis_sample_drops_flagged_searches_and_reserved_slots(synth):
     assert not sorted_ids & set(x["srch_id"])
     assert {"rel_log_price", "no_reviews"} <= set(x.columns)
     assert x.groupby("srch_id")["rel_log_price"].mean().abs().max() < 1e-5
+
+
+def test_bias_factor_point_and_interval(synth):
+    flags = audit.price_flags(synth, audit.per_search(synth)).reset_index().rename(columns={"index": "srch_id"})
+    x = position.analysis_sample(synth, flags)
+    arms = {a: position.balanced_panel(x[x["random_bool"].astype(bool) == r], 30)
+            for a, r in (("algorithm", False), ("random", True))}
+    c = {a: position.rate_by_position(d, "click_bool", n_boot=200, seed=3, max_position=30) for a, d in arms.items()}
+    b = position.bias_factor(c["algorithm"], c["random"], 10)
+    naive = 1 / c["algorithm"].set_index("position").loc[10, "rel_to_1"]
+    rand = 1 / c["random"].set_index("position").loc[10, "rel_to_1"]
+    assert b["factor"] == pytest.approx(naive / rand, rel=1e-3)
+    assert b["lo"] <= b["factor"] <= b["hi"]

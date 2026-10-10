@@ -11,3 +11,4 @@ __pycache__/
 .ruff_cache/
 *.parquet.partial
 .vscode/
+reports/prep/

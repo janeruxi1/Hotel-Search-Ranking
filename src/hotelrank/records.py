@@ -33,7 +33,8 @@ def metrics_dir(source: str) -> Path:
 def write_metrics(name: str, payload: dict, source: str) -> Path:
     out = metrics_dir(source) / f"{name}.json"
     out.parent.mkdir(parents=True, exist_ok=True)
-    out.write_text(json.dumps(_clean({"source": source, **payload}), indent=2) + "\n")
+    with open(out, "w", encoding="utf-8", newline="\n") as fh:  # LF on every OS, so git sees no churn
+        fh.write(json.dumps(_clean({"source": source, **payload}), indent=2) + "\n")
     return out
 
 

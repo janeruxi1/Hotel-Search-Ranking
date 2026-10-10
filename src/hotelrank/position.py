@@ -104,7 +104,21 @@ def rate_by_position(x: pd.DataFrame, outcome: str, n_boot: int = 200, seed: int
         "lo": lo, "hi": hi, "rel_to_1": rate / rate[1], "rel_lo": rel_lo, "rel_hi": rel_hi,
     })
     out = out[(out["position"] >= 1) & (out["impressions"] > 0) & ~out["position"].isin(RESERVED_SLOTS)]
-    return out.reset_index(drop=True)
+    out = out.reset_index(drop=True)
+    # Bootstrap draws of rate(k) / rate(1), kept for intervals on derived quantities (e.g. naive / random).
+    out.attrs["rel_draws"] = {int(k): rel_boot[:, int(k)] for k in out["position"]}
+    return out
+
+
+def bias_factor(naive: pd.DataFrame, randomized: pd.DataFrame, k: int) -> dict:
+    """How many times steeper the naive pos1/pos_k ratio is than the randomized one, with a
+    95% interval from the two (independent) bootstraps."""
+    n_draw, r_draw = naive.attrs["rel_draws"][k], randomized.attrs["rel_draws"][k]
+    point = float(randomized.set_index("position").loc[k, "rel_to_1"] / naive.set_index("position").loc[k, "rel_to_1"])
+    draws = r_draw / n_draw
+    draws = draws[np.isfinite(draws)]
+    return {"factor": round(point, 3), "lo": round(float(np.percentile(draws, 2.5)), 3),
+            "hi": round(float(np.percentile(draws, 97.5)), 3)}
 
 
 def ratio_summary(curve: pd.DataFrame, ks=(10, 20, 30)) -> dict:

@@ -95,14 +95,38 @@
   },
   "naive_over_random_ratio": {
     "click_bool": {
-      "pos1_over_pos10": 1.63,
-      "pos1_over_pos20": 2.48,
-      "pos1_over_pos30": 3.41
+      "pos1_over_pos10": {
+        "factor": 1.627,
+        "lo": 1.553,
+        "hi": 1.709
+      },
+      "pos1_over_pos20": {
+        "factor": 2.481,
+        "lo": 2.322,
+        "hi": 2.665
+      },
+      "pos1_over_pos30": {
+        "factor": 3.414,
+        "lo": 3.158,
+        "hi": 3.691
+      }
     },
     "booking_bool": {
-      "pos1_over_pos10": 1.52,
-      "pos1_over_pos20": 1.98,
-      "pos1_over_pos30": 2.47
+      "pos1_over_pos10": {
+        "factor": 1.523,
+        "lo": 1.305,
+        "hi": 1.726
+      },
+      "pos1_over_pos20": {
+        "factor": 1.976,
+        "lo": 1.667,
+        "hi": 2.289
+      },
+      "pos1_over_pos30": {
+        "factor": 2.473,
+        "lo": 2.007,
+        "hi": 2.982
+      }
     }
   },
   "adjusted_ratios": {

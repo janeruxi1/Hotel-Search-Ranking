@@ -81,7 +81,8 @@ def build(name: str, execute: bool) -> str:
             old = json.loads(dst.read_text(encoding="utf-8"))
             if sources(old) == sources(fresh):
                 return "unchanged"
-        dst.write_text(json.dumps(fresh, indent=1, ensure_ascii=False) + "\n", encoding="utf-8")
+        with open(dst, "w", encoding="utf-8", newline="\n") as fh:
+            fh.write(json.dumps(fresh, indent=1, ensure_ascii=False) + "\n")
         return "built (no outputs; run with --execute)"
     import nbformat
     from nbclient import NotebookClient
@@ -93,7 +94,8 @@ def build(name: str, execute: bool) -> str:
         cell.metadata.pop("execution", None)
     nb.metadata.pop("widgets", None)
     nb.metadata["language_info"] = {"name": "python"}
-    dst.write_text(nbformat.writes(nb), encoding="utf-8")
+    with open(dst, "w", encoding="utf-8", newline="\n") as fh:  # LF on every OS
+        fh.write(nbformat.writes(nb))
     return "built and executed"
 
 

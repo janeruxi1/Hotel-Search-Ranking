@@ -65,9 +65,11 @@ pd.DataFrame(arms)
 # Every search has at least one click: the release contains only searches with a click, so
 # every result in this project describes engaged searches. Each search has at most one booking.
 #
-# The share of searches ending in a booking differs enormously between the arms. That is
-# mostly how the release was sampled, not an effect of random ordering, so **booking rates are
-# never compared between arms**; every comparison is made within an arm.
+# The share of searches ending in a booking differs enormously between the arms (about 94% against
+# 13%). A gap that size is very unlikely to come from the ordering alone and most likely reflects
+# how the release was sampled; the documentation does not say. Either way the arms are not
+# comparable on booking rates, so **booking rates are never compared between arms**; every
+# comparison is made within an arm.
 
 # %%
 selection = {

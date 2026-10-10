@@ -83,8 +83,8 @@ curves = {(arm, out): position.rate_by_position(d, out, n_boot=N_BOOT, seed=7, m
           for arm, d in panel.items() for out in ("click_bool", "booking_bool")}
 ratios = {f"{arm}/{out}": position.ratio_summary(c) for (arm, out), c in curves.items()}
 composition["random_click_pos1_over_pos30_panel"] = ratios["random/click_bool"]["pos1_over_pos30"]["ratio"]
-bias = {out: {k: round(ratios[f"algorithm/{out}"][k]["ratio"] / ratios[f"random/{out}"][k]["ratio"], 2)
-              for k in ratios[f"random/{out}"]} for out in ("click_bool", "booking_bool")}
+bias = {out: {f"pos1_over_pos{k}": position.bias_factor(curves[("algorithm", out)], curves[("random", out)], k)
+              for k in (10, 20, 30)} for out in ("click_bool", "booking_bool")}
 print(composition)
 pd.DataFrame({k: {kk: vv["ratio"] for kk, vv in v.items()} for k, v in ratios.items()})
 

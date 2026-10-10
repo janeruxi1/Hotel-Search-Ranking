@@ -29,12 +29,17 @@ On searches that show a hotel in every slot from 1 to 30 (57% of searches in eac
 | Expedia's ranking, adjusted for hotel attributes | 11.1× | |
 
 - **Reading position effects from ranked traffic overstates them about 3.4-fold** at position 30
-  (1.6-fold at position 10). Bookings show the same pattern: 19.6× naive against 7.9× random.
+  (95% interval 3.2–3.7) and 1.6-fold at position 10. Bookings show the same pattern: 19.6× naive
+  against 7.9× random, a 2.5-fold overstatement (2.0–3.0).
 - **Controlling for observed hotel attributes does not fix the naive estimate** (16.8× → 11.1×,
-  against about 4.4× from the randomized traffic): the ranking uses information the data does not show.
-- **The slope matches the published estimate:** with controls, each position down costs 0.144
-  percentage points of click probability (s.e. 0.0015) on searches with at least 30 results;
-  Compiani et al. (2022) report 0.14 on the same randomized sessions.
+  against about 4.4× from the randomized traffic). The most likely reason is that the ranking uses
+  information the data does not contain; a linear adjustment is also a crude correction.
+- **The click slope is in line with the published estimate:** with controls, each position down
+  costs 0.144 percentage points of click probability (s.e. 0.0015) on searches with at least 30
+  results; Compiani et al. (2022) report 0.14 on the same randomized sessions. Their sample is
+  narrower (the 50 busiest destinations), and relative to the average click rate our slope is
+  somewhat steeper (4.1% against 3.2% of the mean). For bookings the two estimates differ
+  (0.021 against 0.008 points); with different samples I report both rather than force them to agree.
 
 ![Position effects](reports/figures/02_position_effects.png)
 
@@ -42,8 +47,9 @@ On searches that show a hotel in every slot from 1 to 30 (57% of searches in eac
 
 - **Only searches with at least one click are included**, with at most one booking each, so
   every result describes engaged searches.
-- **The two arms were sampled differently** (booking rates differ several-fold between them),
-  so booking rates are compared within an arm, never between arms.
+- **The two arms are not comparable on booking rates** (94% of ranked searches end in a booking
+  against 13% of random ones, a gap most likely created by how the release was sampled), so booking
+  rates are compared within an arm, never between arms.
 - **Slots 5, 11, 17 and 23 are almost never filled** in either arm.
 - **Some searches are sorted by price** (about 5% of random-arm searches), most likely by the
   user; they are dropped.
