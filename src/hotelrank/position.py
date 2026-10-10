@@ -6,6 +6,8 @@ impressions and 267k searches.
 """
 from __future__ import annotations
 
+import warnings
+
 import numpy as np
 import pandas as pd
 
@@ -22,12 +24,12 @@ def analysis_sample(df: pd.DataFrame, flags: pd.DataFrame) -> pd.DataFrame:
     keep = ~f["bad_price"] & ~f["price_sorted"].fillna(False).astype(bool)
     x = df[keep.reindex(df["srch_id"]).to_numpy() & ~df["position"].isin(RESERVED_SLOTS).to_numpy()].copy()
     lp = np.log(x["price_usd"].astype(float))
-    x["rel_log_price"] = lp - lp.groupby(x["srch_id"]).transform("mean")
-    rev = x["prop_review_score"].astype(float)
-    x["no_reviews"] = (rev.isna() | (rev == 0)).astype(float)
+    x["rel_log_price"] = (lp - lp.groupby(x["srch_id"]).transform("mean")).astype(np.float32)
+    rev = x["prop_review_score"].astype(np.float32)
+    x["no_reviews"] = (rev.isna() | (rev == 0)).astype(np.float32)
     x["prop_review_score"] = rev.fillna(0.0)
     for c in ("prop_brand_bool", "promotion_flag", "click_bool", "booking_bool"):
-        x[c] = x[c].astype(float)
+        x[c] = x[c].astype(np.float32)
     return x
 
 
@@ -75,11 +77,13 @@ def rate_by_position(x: pd.DataFrame, outcome: str, n_boot: int = 200, seed: int
     rng = np.random.default_rng(seed)
     present = n > 0
     if np.all(n[present] == n_s):  # balanced: one row per search and slot
-        Y = np.zeros((n_s, P))
+        Y = np.zeros((n_s, P), dtype=np.float32)
         Y[s_codes, pos] = y
-        W = rng.poisson(1.0, (n_boot, n_s)).astype(float)
-        with np.errstate(invalid="ignore", divide="ignore"):
-            boot = (W @ Y) / W.sum(axis=1, keepdims=True)
+        boot = np.empty((n_boot, P))
+        for a in range(0, n_boot, 25):  # blocks of replicates keep the weight matrix small
+            W = rng.poisson(1.0, (min(25, n_boot - a), n_s)).astype(np.float32)
+            with np.errstate(invalid="ignore", divide="ignore"):
+                boot[a:a + len(W)] = (W @ Y) / W.sum(axis=1, keepdims=True)
         boot[:, ~present] = np.nan
     else:
         boot = np.empty((n_boot, P))
@@ -89,14 +93,15 @@ def rate_by_position(x: pd.DataFrame, outcome: str, n_boot: int = 200, seed: int
             kb = np.bincount(pos, weights=w * y, minlength=P)
             with np.errstate(invalid="ignore", divide="ignore"):
                 boot[b] = kb / nb
-    with np.errstate(invalid="ignore", divide="ignore"):
+    with np.errstate(invalid="ignore", divide="ignore"), warnings.catch_warnings():
+        warnings.simplefilter("ignore", RuntimeWarning)  # empty slots give all-NaN columns
         rate = k / n
         rel_boot = boot / boot[:, [1]]
+        lo, hi = np.nanpercentile(boot, 2.5, axis=0), np.nanpercentile(boot, 97.5, axis=0)
+        rel_lo, rel_hi = np.nanpercentile(rel_boot, 2.5, axis=0), np.nanpercentile(rel_boot, 97.5, axis=0)
     out = pd.DataFrame({
         "position": np.arange(P), "impressions": n.astype(int), "events": k.astype(int), "rate": rate,
-        "lo": np.nanpercentile(boot, 2.5, axis=0), "hi": np.nanpercentile(boot, 97.5, axis=0),
-        "rel_to_1": rate / rate[1],
-        "rel_lo": np.nanpercentile(rel_boot, 2.5, axis=0), "rel_hi": np.nanpercentile(rel_boot, 97.5, axis=0),
+        "lo": lo, "hi": hi, "rel_to_1": rate / rate[1], "rel_lo": rel_lo, "rel_hi": rel_hi,
     })
     out = out[(out["position"] >= 1) & (out["impressions"] > 0) & ~out["position"].isin(RESERVED_SLOTS)]
     return out.reset_index(drop=True)
@@ -110,7 +115,7 @@ def ratio_summary(curve: pd.DataFrame, ks=(10, 20, 30)) -> dict:
 
 
 def within_search_lpm(x: pd.DataFrame, outcome: str, controls: list[str] | None = None,
-                      position: str = "dummies", max_position: int = 38, chunk: int = 400_000) -> dict:
+                      position: str = "dummies", max_position: int = 38, chunk: int = 200_000) -> dict:
     """OLS of ``outcome`` on position (dummies relative to position 1, or a linear term) and
     optional hotel controls, with search fixed effects (by demeaning) and standard errors
     clustered by search.

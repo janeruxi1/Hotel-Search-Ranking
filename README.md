@@ -69,6 +69,15 @@ python notebooks/02_position_effects.py
 pytest
 ```
 
+Each analysis lives in a `.py` file in `notebooks/` (the source of truth, run by CI) and a
+generated `.ipynb` beside it, executed on the real data so GitHub shows every table and figure.
+To rebuild and re-run them (needs `pip install nbclient ipykernel`):
+
+```bash
+python scripts/build_notebooks.py --execute
+python scripts/build_notebooks.py --check     # .ipynb still match their .py sources
+```
+
 Without the data, `HOTELRANK_SYNTHETIC=1 python notebooks/01_audit.py` runs everything on a
 synthetic table with the same columns; this is what CI does. Synthetic runs never overwrite
 `reports/metrics/`.

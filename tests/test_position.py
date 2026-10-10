@@ -90,4 +90,4 @@ def test_analysis_sample_drops_flagged_searches_and_reserved_slots(synth):
     sorted_ids = set(flags.loc[flags["price_sorted"].fillna(False).astype(bool), "srch_id"])
     assert not sorted_ids & set(x["srch_id"])
     assert {"rel_log_price", "no_reviews"} <= set(x.columns)
-    assert x.groupby("srch_id")["rel_log_price"].mean().abs().max() < 1e-9
+    assert x.groupby("srch_id")["rel_log_price"].mean().abs().max() < 1e-5

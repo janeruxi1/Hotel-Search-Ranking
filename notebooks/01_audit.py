@@ -13,12 +13,19 @@
 import sys
 from pathlib import Path
 
-ROOT = Path.cwd() if (Path.cwd() / "src").exists() else Path.cwd().parent
-sys.path.insert(0, str(ROOT / "src"))
+def _project_root() -> Path:
+    """The folder holding src/hotelrank, wherever the script or notebook was started."""
+    here = Path.cwd().resolve()
+    for p in (here, *here.parents):
+        if (p / "src" / "hotelrank" / "__init__.py").exists():
+            return p
+    for marker in here.glob("*/src/hotelrank/__init__.py"):
+        return marker.parents[2]
+    raise FileNotFoundError("run from inside the project folder")
 
-import matplotlib
 
-matplotlib.use("Agg")
+sys.path.insert(0, str(_project_root() / "src"))
+
 import matplotlib.pyplot as plt
 import pandas as pd
 
@@ -198,7 +205,7 @@ record = {
     "analysis_sample": sample, "missing_share": missing,
 }
 path = write_metrics("01_audit", record, SOURCE)
-print("wrote", path)
+print("wrote", path.relative_to(PROJECT_ROOT) if SOURCE == "real" else path.name)
 if SOURCE == "real":
     FIGURES_DIR.mkdir(parents=True, exist_ok=True)
     fig.savefig(FIGURES_DIR / "01_reserved_slots.png", dpi=150)

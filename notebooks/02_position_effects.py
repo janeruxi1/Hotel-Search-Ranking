@@ -14,12 +14,19 @@
 import sys
 from pathlib import Path
 
-ROOT = Path.cwd() if (Path.cwd() / "src").exists() else Path.cwd().parent
-sys.path.insert(0, str(ROOT / "src"))
+def _project_root() -> Path:
+    """The folder holding src/hotelrank, wherever the script or notebook was started."""
+    here = Path.cwd().resolve()
+    for p in (here, *here.parents):
+        if (p / "src" / "hotelrank" / "__init__.py").exists():
+            return p
+    for marker in here.glob("*/src/hotelrank/__init__.py"):
+        return marker.parents[2]
+    raise FileNotFoundError("run from inside the project folder")
 
-import matplotlib
 
-matplotlib.use("Agg")
+sys.path.insert(0, str(_project_root() / "src"))
+
 import matplotlib.pyplot as plt
 import pandas as pd
 
@@ -59,6 +66,10 @@ composition = {
     "panel_share_of_searches": {arm: round(panel[arm]["srch_id"].nunique() / arms[arm]["srch_id"].nunique(), 4)
                                 for arm in arms},
 }
+# Random-arm searches with at least 30 results, for the comparison with the published estimate (section 4).
+long = arms["random"][arms["random"].groupby("srch_id")["position"].transform("size") >= 30]
+sample = {arm: {"impressions": int(len(d)), "searches": int(d["srch_id"].nunique())} for arm, d in arms.items()}
+del arms, x  # keep memory low: everything below uses the panel or `long`
 
 # %% [markdown]
 # ## 2. Raw curves on the balanced panel
@@ -118,7 +129,6 @@ pd.DataFrame(adjusted_ratios)
 # on random-arm searches with at least 30 results.
 
 # %%
-long = arms["random"][arms["random"].groupby("srch_id")["position"].transform("size") >= 30]
 benchmark = {}
 for out, (paper_slope, paper_mean) in {"click_bool": (0.14, 4.39), "booking_bool": (0.008, 0.27)}.items():
     f = position.within_search_lpm(long, out, position.CONTROLS, position="linear")
@@ -160,7 +170,7 @@ def curve_record(c, cols):
 
 
 record = {
-    "sample": {arm: {"impressions": int(len(d)), "searches": int(d["srch_id"].nunique())} for arm, d in arms.items()},
+    "sample": sample,
     "n_boot": N_BOOT,
     "composition": composition,
     "raw_ratios": ratios,
@@ -173,6 +183,7 @@ record = {
     "lpm_curves": {"/".join(k): curve_record(c, ["diff", "se", "rel_to_1"]) for k, c in lpm_curves.items()},
 }
 print({k: v for k, v in record.items() if k in ("composition", "naive_over_random_ratio", "adjusted_ratios")})
-print("wrote", write_metrics("02_position_effects", record, SOURCE))
+out_path = write_metrics("02_position_effects", record, SOURCE)
+print("wrote", out_path.relative_to(PROJECT_ROOT) if SOURCE == "real" else out_path.name)
 if SOURCE == "real":
     fig.savefig(FIGURES_DIR / "02_position_effects.png", dpi=150, bbox_inches="tight")

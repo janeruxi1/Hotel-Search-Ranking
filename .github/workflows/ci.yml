@@ -25,6 +25,8 @@ jobs:
         run: ruff check src tests scripts notebooks
       - name: Tests
         run: pytest -q
+      - name: Notebooks match their .py sources
+        run: python scripts/build_notebooks.py --check
       - name: Notebooks on synthetic data
         run: |
           for nb in notebooks/[0-9]*.py; do echo "== $nb"; python "$nb"; done
