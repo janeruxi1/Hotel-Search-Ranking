@@ -20,7 +20,7 @@ All intervals are bootstrapped over searches.
 
 ## Guardrails for a ranking change
 
-| Guardrail | Threshold (fixed before Phase 5) |
+| Guardrail | Threshold (fixed before phase 4, in `reports/decision_rule.md`) |
 |---|---|
 | Expected revenue per search | Not more than 2% below the baseline ranking |
 | Share of bookings at hotels with no reviews | Not above the baseline share (avoid promoting unknown quality) |

@@ -1,6 +1,6 @@
-# Pre-declared decision rule for Phase 5 (ranking policies)
+# Pre-declared decision rule for phase 4 (ranking policies)
 
-Status: **committed before any Phase 5 evaluation code was written or run.** The git history
+Status: **committed before any phase 4 evaluation code was written or run.** The git history
 shows this file landing before `notebooks/04_policy_evaluation`. Changing it after seeing results
 would defeat its purpose; any later change must be a new, dated section below, not an edit.
 
@@ -50,4 +50,10 @@ the question the ranking team asked.
 - Expedia's own ranking cannot be evaluated: the data does not say what order Expedia would have
   shown in the random-order searches. The comparison is between candidate rankings only.
 - Offline estimates rely on the choice model. The recommendation is to *test*, not to ship; the
-  A/B test sized in Phase 6 is what decides.
+  A/B test sized in phase 5 is what decides.
+
+## Changes
+
+- 2026-10-11: phase numbers relabelled to match notebook numbers (the ranking-policy phase was
+  "Phase 5" in the first commit of this file and is now phase 4; the memo phase moved from 6 to
+  5). Wording only; the rule itself is unchanged.

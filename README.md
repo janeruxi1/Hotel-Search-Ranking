@@ -3,10 +3,9 @@
 [![CI](https://github.com/janeruxi1/Hotel-Search-Ranking/actions/workflows/ci.yml/badge.svg)](https://github.com/janeruxi1/Hotel-Search-Ranking/actions)
 [![Python](https://img.shields.io/badge/python-3.10%2B-blue)](https://www.python.org/)
 
-> **Work in progress.** Phases 0–4 of 7 are done (plan, data preparation, audit, position
-> effects, choice model). Results below come from `reports/metrics/01_audit.json`,
-> `02_position_effects.json` and `03_choice_model.json`; nothing is quoted before the code
-> that produces it has run.
+> **Work in progress.** Phases 0–4 of 6 are done: plan and data preparation, then notebooks
+> 01 audit, 02 position effects, 03 choice model and 04 ranking policies. Every result below
+> comes from `reports/metrics/`; nothing is quoted before the code that produces it has run.
 
 Top search positions get far more clicks, but Expedia's ranking already puts its most
 attractive hotels there, so part of the top slots' advantage belongs to the hotels, not the
@@ -17,6 +16,36 @@ measures what drives the choice within a search, and evaluates which ranking to 
 9,917,530 hotel impressions from 399,344 searches (November 2012 – June 2013), 30.4% of them
 shown in random order. Real data, not simulated. The data belong to Expedia and are not
 redistributed here; see [`data/raw/README.md`](data/raw/README.md).
+
+## Which ranking to test
+
+Four rankings compared on 23,165 held-out random-order searches, with a booking model
+(including the option to book nothing) fitted on the other 91,516. The decision rule
+was committed before this analysis ([`reports/decision_rule.md`](reports/decision_rule.md)).
+
+| Ranking | Expected bookings per 100 searches | Expected booking value per search |
+|---|---|---|
+| Reviews first | 13.84 | $46.79 |
+| Cheapest first (the proposal) | 13.69 | $35.44 |
+| Model: most likely to be booked | 15.26 | $44.41 |
+| Model: highest expected value | 14.23 | $50.41 |
+| Random order, as shown (reference) | 13.33 | $41.57 |
+
+- **Cheapest first loses on both counts:** −0.15 bookings per 100 searches
+  against reviews first, and −24% booking value. The proposed change should not be tested.
+- **The pre-declared rule recommends reviews first.** The model ranking with the most bookings
+  (+10% against reviews first) gives up 5.1% of booking value, more than the 2% the rule allows.
+- **Beyond the rule (exploratory):** blends of the two model rankings beat reviews first on both
+  metrics in point estimates (for example, 15.14 bookings per 100 searches and $47.04 per search). The rule only
+  considered the bookings-maximising model ranking; the blend is the natural candidate for a test,
+  flagged as found after the fact rather than substituted for the rule's answer.
+- **The biggest caveat:** the gains come from the model's view that a better top of the page makes
+  a booking more likely at all. On held-out searches, the evaluator is well calibrated overall
+  (13.33% predicted vs 13.18% observed), but the direct check of that mechanism
+  is inconclusive (slope 0.35, 95% interval −0.28 to 0.98; 1 would confirm it, 0 would refute it).
+  Offline evaluation can choose what to test; only an A/B test can say how much it is worth.
+
+![Policy evaluation](reports/figures/04_policy_evaluation.png)
 
 ## Position effects: naive versus randomized
 
@@ -105,6 +134,7 @@ python scripts/prepare_data.py      # needs data/raw/train.csv, see data/raw/REA
 python notebooks/01_audit.py        # writes reports/metrics/01_audit.json and figures
 python notebooks/02_position_effects.py
 python notebooks/03_choice_model.py
+python notebooks/04_policy_evaluation.py
 pytest
 ```
 

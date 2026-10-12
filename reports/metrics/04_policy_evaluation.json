@@ -1,0 +1,396 @@
+{
+  "source": "real",
+  "sample": {
+    "train_searches": 91516,
+    "heldout_searches": 23165,
+    "n_boot": 200
+  },
+  "booking_model": {
+    "names": [
+      "log_price",
+      "hotel_mean_log_price",
+      "prop_starrating",
+      "prop_review_score",
+      "no_reviews",
+      "prop_brand_bool",
+      "prop_location_score1",
+      "promotion_flag",
+      "outside",
+      "out_log_n_results",
+      "out_log_length_of_stay",
+      "out_log1p_booking_window",
+      "out_srch_adults_count",
+      "out_srch_children_count",
+      "out_srch_room_count",
+      "out_srch_saturday_night_bool",
+      "pos_2",
+      "pos_3",
+      "pos_4",
+      "pos_6",
+      "pos_7",
+      "pos_8",
+      "pos_9",
+      "pos_10",
+      "pos_12",
+      "pos_13",
+      "pos_14",
+      "pos_15",
+      "pos_16",
+      "pos_18",
+      "pos_19",
+      "pos_20",
+      "pos_21",
+      "pos_22",
+      "pos_24",
+      "pos_25",
+      "pos_26",
+      "pos_27",
+      "pos_28",
+      "pos_29",
+      "pos_30",
+      "pos_31",
+      "pos_32",
+      "pos_33",
+      "pos_34",
+      "pos_35",
+      "pos_36",
+      "pos_37",
+      "pos_38"
+    ],
+    "beta": [
+      -1.078623,
+      0.581843,
+      0.162137,
+      0.241081,
+      0.023241,
+      0.277278,
+      0.030755,
+      0.375878,
+      0.014492,
+      0.727187,
+      0.628038,
+      0.196486,
+      0.113668,
+      -0.009147,
+      -0.194552,
+      0.139009,
+      -0.221274,
+      -0.384669,
+      -0.596602,
+      -0.748516,
+      -0.803352,
+      -0.962122,
+      -1.04689,
+      -1.041169,
+      -1.12656,
+      -1.22797,
+      -1.22907,
+      -1.383498,
+      -1.444676,
+      -1.461494,
+      -1.525826,
+      -1.534385,
+      -1.616028,
+      -1.841897,
+      -1.685993,
+      -1.783248,
+      -1.700547,
+      -1.87311,
+      -1.804988,
+      -2.042406,
+      -2.109742,
+      -1.865061,
+      -2.056695,
+      -2.004992,
+      -2.044463,
+      -2.15046,
+      -2.440228,
+      -2.171826,
+      -2.144878
+    ],
+    "se": [
+      0.036117,
+      0.042462,
+      0.012376,
+      0.017487,
+      0.090145,
+      0.021177,
+      0.007121,
+      0.022604,
+      0.119628,
+      0.019877,
+      0.017719,
+      0.007516,
+      0.012861,
+      0.013393,
+      0.021465,
+      0.020794,
+      0.03646,
+      0.038251,
+      0.041031,
+      0.043162,
+      0.045123,
+      0.04888,
+      0.051527,
+      0.052659,
+      0.055296,
+      0.058516,
+      0.059608,
+      0.064532,
+      0.067851,
+      0.069074,
+      0.072017,
+      0.073371,
+      0.077397,
+      0.087294,
+      0.082097,
+      0.087063,
+      0.085239,
+      0.093571,
+      0.091902,
+      0.104405,
+      0.109828,
+      0.099814,
+      0.11294,
+      0.113611,
+      0.119286,
+      0.132926,
+      0.173589,
+      0.201891,
+      0.378585
+    ],
+    "converged": true,
+    "ridge": 0.01,
+    "mcfadden_r2": 0.7638
+  },
+  "evaluator": {
+    "predicted_booking_rate": 0.13331,
+    "observed_booking_rate": 0.13179,
+    "calibration": {
+      "0": {
+        "pred": 0.03521,
+        "obs": 0.03971
+      },
+      "1": {
+        "pred": 0.05508,
+        "obs": 0.05095
+      },
+      "2": {
+        "pred": 0.07077,
+        "obs": 0.08114
+      },
+      "3": {
+        "pred": 0.08758,
+        "obs": 0.0937
+      },
+      "4": {
+        "pred": 0.10584,
+        "obs": 0.11308
+      },
+      "5": {
+        "pred": 0.12623,
+        "obs": 0.14033
+      },
+      "6": {
+        "pred": 0.15051,
+        "obs": 0.15803
+      },
+      "7": {
+        "pred": 0.18072,
+        "obs": 0.17436
+      },
+      "8": {
+        "pred": 0.21977,
+        "obs": 0.21503
+      },
+      "9": {
+        "pred": 0.30141,
+        "obs": 0.25162
+      }
+    },
+    "order_luck": {
+      "0": {
+        "searches": 4633.0,
+        "predicted_uplift": -0.007296,
+        "observed_uplift": 0.001544,
+        "observed_se": 0.005311
+      },
+      "1": {
+        "searches": 4633.0,
+        "predicted_uplift": -0.001714,
+        "observed_uplift": -0.004188,
+        "observed_se": 0.004436
+      },
+      "2": {
+        "searches": 4633.0,
+        "predicted_uplift": 0.000685,
+        "observed_uplift": 0.002146,
+        "observed_se": 0.004371
+      },
+      "3": {
+        "searches": 4633.0,
+        "predicted_uplift": 0.003436,
+        "observed_uplift": -0.004768,
+        "observed_se": 0.004659
+      },
+      "4": {
+        "searches": 4633.0,
+        "predicted_uplift": 0.010788,
+        "observed_uplift": 0.00357,
+        "observed_se": 0.005524
+      }
+    },
+    "order_luck_slope": {
+      "slope": 0.3502,
+      "se": 0.3236,
+      "ci": [
+        -0.284,
+        0.9845
+      ]
+    }
+  },
+  "policies": {
+    "B1_reviews_first": {
+      "bookings_per_search": 0.13838,
+      "bookings_ci": [
+        0.135884,
+        0.140574
+      ],
+      "value_per_search_usd": 46.7891,
+      "value_ci": [
+        45.573361,
+        48.16522
+      ]
+    },
+    "B2_cheapest_first": {
+      "bookings_per_search": 0.136916,
+      "bookings_ci": [
+        0.134604,
+        0.139315
+      ],
+      "value_per_search_usd": 35.4356,
+      "value_ci": [
+        34.623145,
+        36.434979
+      ]
+    },
+    "M1_most_likely_booked": {
+      "bookings_per_search": 0.152568,
+      "bookings_ci": [
+        0.150151,
+        0.155152
+      ],
+      "value_per_search_usd": 44.4149,
+      "value_ci": [
+        43.114481,
+        45.761696
+      ]
+    },
+    "M2_highest_expected_value": {
+      "bookings_per_search": 0.142324,
+      "bookings_ci": [
+        0.14002,
+        0.144779
+      ],
+      "value_per_search_usd": 50.4063,
+      "value_ci": [
+        48.999382,
+        51.97982
+      ]
+    },
+    "logged_random_order": {
+      "bookings_per_search": 0.133313,
+      "bookings_ci": [
+        0.131292,
+        0.135455
+      ],
+      "value_per_search_usd": 41.5721,
+      "value_ci": [
+        40.506442,
+        42.788051
+      ]
+    }
+  },
+  "decision": {
+    "B_star": "B1_reviews_first",
+    "M_star": "M1_most_likely_booked",
+    "bookings_diff": 0.014187925571289756,
+    "bookings_diff_ci": [
+      0.013089040604941466,
+      0.01537323785544829
+    ],
+    "bookings_rel_change": 0.10252861337361008,
+    "value_rel_change": -0.050742383227667776,
+    "condition_1_bookings": true,
+    "condition_2_value": false,
+    "recommend": "B1_reviews_first",
+    "failed": [
+      "booking value more than 2% lower"
+    ],
+    "cheapest_first_vs_reviews_first": {
+      "bookings_diff": -0.0014638312726806546,
+      "bookings_diff_ci": [
+        -0.0027506076724748254,
+        -1.2489951797152681e-05
+      ],
+      "value_rel_change": -0.24265294399617776
+    }
+  },
+  "frontier_exploratory": [
+    {
+      "lambda": 0.0,
+      "bookings": 0.152568,
+      "value": 44.414865
+    },
+    {
+      "lambda": 0.1,
+      "bookings": 0.152447,
+      "value": 45.257155
+    },
+    {
+      "lambda": 0.2,
+      "bookings": 0.152053,
+      "value": 46.150921
+    },
+    {
+      "lambda": 0.3,
+      "bookings": 0.151366,
+      "value": 47.043322
+    },
+    {
+      "lambda": 0.4,
+      "bookings": 0.15038,
+      "value": 47.902781
+    },
+    {
+      "lambda": 0.5,
+      "bookings": 0.149158,
+      "value": 48.666688
+    },
+    {
+      "lambda": 0.6,
+      "bookings": 0.147782,
+      "value": 49.29121
+    },
+    {
+      "lambda": 0.7,
+      "bookings": 0.146351,
+      "value": 49.76315
+    },
+    {
+      "lambda": 0.8,
+      "bookings": 0.144929,
+      "value": 50.088805
+    },
+    {
+      "lambda": 0.9,
+      "bookings": 0.143581,
+      "value": 50.296207
+    },
+    {
+      "lambda": 1.0,
+      "bookings": 0.142324,
+      "value": 50.406254
+    }
+  ]
+}

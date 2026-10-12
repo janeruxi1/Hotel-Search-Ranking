@@ -78,8 +78,8 @@ Facts from the 2026-10-09 profile, and the design consequence of each:
 
 ## Pre-declared decision rule
 
-Fixed in [`reports/decision_rule.md`](reports/decision_rule.md), committed with Phase 4 and
-before any Phase 5 code: four candidate rankings (reviews first, cheapest first, two model
+Fixed in [`reports/decision_rule.md`](reports/decision_rule.md), committed with phase 3 and
+before any phase 4 code: four candidate rankings (reviews first, cheapest first, two model
 rankings); a model ranking is recommended for an A/B test only if its expected bookings per
 search beat the better baseline with the 95% interval of the difference above zero, and its
 expected booking value is no more than 2% lower.
@@ -91,16 +91,17 @@ until the code producing it has run and saved its output to `reports/metrics/*.j
 
 ## Phases
 
-| # | Phase | Artifact that must exist to call it done |
-|---|---|---|
-| 0 | Scenario brief, metric framework, plan | `reports/scenario_brief.md`, `reports/metrics_framework.md`, this file |
-| 1 | Data preparation | `scripts/prepare_data.py` → `data/interim/train.parquet`; validated row, search and hotel counts; synthetic CI fixture with the same schema |
-| 2 | Audit | `notebooks/01_audit` → `reports/metrics/01_audit.json`: arms, selection, position 5, price rules, missingness |
-| 3 | Position effects | `notebooks/02_position_effects` → naive vs randomized curves with search-clustered intervals; ratio of naive to causal; comparison with Compiani et al. |
-| 4 | Choice model | `notebooks/03_choice_model` → conditional logit on the random arm; dollar value of a position and of a promotion; robustness (trim rules, hotel-quality controls, by star tier) |
-| 5 | Ranking policies | decision rule committed first; `notebooks/04_policy_evaluation` → expected bookings and revenue per search per policy with intervals; frontier figure |
-| 6 | Decision memo & pilot | `reports/decision_memo.md`, A/B sizing; memo figures checked by CI against the records |
-| 7 | Packaging | README, tests, CI on the synthetic fixture, Streamlit demo on derived results only |
+Phase numbers match notebook numbers: notebook `0N_*` is phase N.
+
+| # | Phase | Status | Artifact that must exist to call it done |
+|---|---|---|---|
+| 0 | Plan and data preparation | done | `reports/scenario_brief.md`, `reports/metrics_framework.md`, this file; `scripts/prepare_data.py` → `data/interim/train.parquet` with validated row, search and hotel counts; synthetic CI fixture with the same schema |
+| 1 | Audit | done | `notebooks/01_audit` → `reports/metrics/01_audit.json`: arms, selection, reserved slots, price rules, randomization check |
+| 2 | Position effects | done | `notebooks/02_position_effects` → naive vs randomized curves with search-clustered intervals; overstatement factor; comparison with Compiani et al. |
+| 3 | Choice model | done | `notebooks/03_choice_model` → conditional logit on the random arm; dollar value of a position and of a promotion; hotel-price control; hold-out validation |
+| 4 | Ranking policies | done | decision rule committed first; `notebooks/04_policy_evaluation` → expected bookings and booking value per search per policy with intervals |
+| 5 | Decision memo & A/B test | next | `reports/decision_memo.md`, A/B sizing; memo numbers checked by CI against the records |
+| 6 | Packaging | | README, tests, CI on the synthetic fixture, Streamlit demo on derived results only |
 
 ## Methods notes
 

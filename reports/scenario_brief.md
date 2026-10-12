@@ -2,7 +2,7 @@
 
 **Requester:** Director of Lodging Marketplace, an online travel agency (the data is Expedia's;
 the scenario is framed the way an internal decision-science team would receive it).
-**Analyst:** Xi Ru · **Status:** Phase 0, written before any modelling.
+**Analyst:** Xi Ru · **Status:** phase 0, written before any modelling.
 
 ## The question as asked
 

@@ -85,12 +85,15 @@ def build(x: pd.DataFrame, outcome: str, attributes: list[str] | None = None, po
         cat = lookup[pos]
     else:
         levels, cat = [], np.zeros(len(x), dtype=np.int64)
+    # Attributes that never vary carry no information (and would make the fit singular).
+    dropped = [a for a in attributes if x[a].astype(float).std() == 0]
+    attributes = [a for a in attributes if a not in dropped]
     X = np.column_stack([x[a].to_numpy().astype(np.float64) for a in attributes]) if attributes else np.zeros((len(x), 0))
     sid = x["srch_id"].to_numpy()
     starts = np.flatnonzero(np.r_[True, sid[1:] != sid[:-1]])
     return ChoiceData(X=X, cat=cat, levels=levels, chosen=x[outcome].to_numpy().astype(bool), starts=starts,
                       attr_names=list(attributes), search_ids=sid[starts],
-                      meta={"rows": int(len(x)), "searches": int(len(starts))})
+                      meta={"rows": int(len(x)), "searches": int(len(starts)), "dropped": dropped})
 
 
 def subset(d: ChoiceData, keep_search: np.ndarray) -> ChoiceData:
@@ -182,19 +185,28 @@ def _information(d: ChoiceData, p: np.ndarray) -> np.ndarray:
     return H - M.T @ M
 
 
-def fit(d: ChoiceData, max_iter: int = 50, tol: float = 1e-9) -> ChoiceFit:
+def fit(d: ChoiceData, max_iter: int = 50, tol: float = 1e-9, ridge: float = 0.0) -> ChoiceFit:
     """Maximum-likelihood conditional logit by Newton's method with step halving (the
     log-likelihood is concave, so this converges in a handful of iterations). Standard errors
-    come from the observed information at the optimum."""
+    come from the observed information at the optimum.
+
+    ``ridge`` adds a small L2 penalty, 0.5 * ridge * |beta|^2. With thousands of choices it is
+    negligible; it keeps the fit finite when a rare level is never chosen in a small sample
+    (otherwise its coefficient runs off to minus infinity). The reported log-likelihood is
+    always the unpenalised one."""
     k = d.X.shape[1] + len(d.levels)
     xc = _score_parts(d, d.chosen.astype(np.float64))
     b = np.zeros(k)
-    ll = loglik(d, b)
+
+    def objective(beta):
+        return loglik(d, beta) - 0.5 * ridge * beta @ beta
+
+    obj = objective(b)
     converged = False
     for _ in range(max_iter):
         p, _ = probabilities(d, b)
-        grad = xc - _score_parts(d, p)
-        H = _information(d, p)
+        grad = xc - _score_parts(d, p) - ridge * b
+        H = _information(d, p) + ridge * np.eye(k)
         try:
             step = np.linalg.solve(H, grad)
         except np.linalg.LinAlgError:  # e.g. a position level never chosen in a tiny sample
@@ -202,22 +214,23 @@ def fit(d: ChoiceData, max_iter: int = 50, tol: float = 1e-9) -> ChoiceFit:
         t = 1.0
         while True:
             new = b + t * step
-            ll_new = loglik(d, new)
-            if ll_new >= ll - 1e-12 or t < 1e-6:
+            obj_new = objective(new)
+            if obj_new >= obj - 1e-12 or t < 1e-6:
                 break
             t /= 2
-        b, gain, ll = new, ll_new - ll, ll_new
-        if abs(gain) < tol * max(1.0, abs(ll)) and np.max(np.abs(t * step)) < 1e-6:
+        b, gain, obj = new, obj_new - obj, obj_new
+        if abs(gain) < tol * max(1.0, abs(obj)) and np.max(np.abs(t * step)) < 1e-6:
             converged = True
             break
     p, _ = probabilities(d, b)
-    info = _information(d, p)
+    info = _information(d, p) + ridge * np.eye(k)
     try:
         cov = np.linalg.inv(info)
     except np.linalg.LinAlgError:
         cov, converged = np.linalg.pinv(info), False
-    return ChoiceFit(names=d.names, beta=b, cov=cov, loglik=ll, loglik_null=float(-np.log(d.sizes).sum()),
-                     n_searches=d.n_searches, rows=len(p), converged=converged)
+    return ChoiceFit(names=d.names, beta=b, cov=cov, loglik=loglik(d, b),
+                     loglik_null=float(-np.log(d.sizes).sum()), n_searches=d.n_searches, rows=len(p),
+                     converged=converged)
 
 
 def ratio_with_se(fit_: ChoiceFit, num: str | list[tuple[str, float]], den: str) -> tuple[float, float]:
