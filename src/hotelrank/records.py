@@ -40,3 +40,22 @@ def write_metrics(name: str, payload: dict, source: str) -> Path:
 
 def read_metrics(name: str, directory: Path = METRICS_DIR) -> dict:
     return json.loads((Path(directory) / f"{name}.json").read_text())
+
+
+def show_verdict(title: str, findings: list[str], next_step: str) -> None:
+    """Show a phase verdict as Markdown in Jupyter (and in the notebook on GitHub), plain text elsewhere.
+
+    The findings are built from the run's own record, so the rendered summary cannot drift from the analysis.
+    Dollar signs are escaped so Markdown renderers don't read them as maths.
+    """
+    items = "\n".join(f"{i}. {f}" for i, f in enumerate(findings, 1))
+    md = f"### {title}\n\n{items}\n\n**Next:** {next_step}".replace("$", r"\$")
+    try:
+        from IPython import get_ipython
+        from IPython.display import Markdown, display
+    except ImportError:  # plain `python notebook.py` (CI) without IPython installed
+        get_ipython = None
+    if get_ipython is not None and get_ipython() is not None:
+        display(Markdown(md))
+    else:
+        print(md.replace(r"\$", "$"))

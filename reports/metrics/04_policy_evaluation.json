@@ -211,41 +211,41 @@
     "order_luck": {
       "0": {
         "searches": 4633.0,
-        "predicted_uplift": -0.007296,
-        "observed_uplift": 0.001544,
-        "observed_se": 0.005311
+        "predicted_uplift": -0.007107,
+        "observed_uplift": -0.0017,
+        "observed_se": 0.005265
       },
       "1": {
         "searches": 4633.0,
-        "predicted_uplift": -0.001714,
-        "observed_uplift": -0.004188,
-        "observed_se": 0.004436
+        "predicted_uplift": -0.001703,
+        "observed_uplift": 0.000675,
+        "observed_se": 0.004516
       },
       "2": {
         "searches": 4633.0,
-        "predicted_uplift": 0.000685,
-        "observed_uplift": 0.002146,
-        "observed_se": 0.004371
+        "predicted_uplift": 0.000666,
+        "observed_uplift": -0.002217,
+        "observed_se": 0.004296
       },
       "3": {
         "searches": 4633.0,
-        "predicted_uplift": 0.003436,
-        "observed_uplift": -0.004768,
-        "observed_se": 0.004659
+        "predicted_uplift": 0.003377,
+        "observed_uplift": -0.000403,
+        "observed_se": 0.004731
       },
       "4": {
         "searches": 4633.0,
-        "predicted_uplift": 0.010788,
-        "observed_uplift": 0.00357,
-        "observed_se": 0.005524
+        "predicted_uplift": 0.010624,
+        "observed_uplift": 0.00194,
+        "observed_se": 0.005502
       }
     },
     "order_luck_slope": {
-      "slope": 0.3502,
-      "se": 0.3236,
+      "slope": 0.3713,
+      "se": 0.3298,
       "ci": [
-        -0.284,
-        0.9845
+        -0.2751,
+        1.0176
       ]
     }
   },
@@ -392,5 +392,63 @@
       "bookings": 0.142324,
       "value": 50.406254
     }
-  ]
+  ],
+  "guardrails": {
+    "B1_reviews_first": {
+      "no_review_booking_share": 0.01313,
+      "booked_nightly_price_usd": 150.57793
+    },
+    "B2_cheapest_first": {
+      "no_review_booking_share": 0.02808,
+      "booked_nightly_price_usd": 115.59134
+    },
+    "M1_most_likely_booked": {
+      "no_review_booking_share": 0.01256,
+      "booked_nightly_price_usd": 129.39524
+    },
+    "M2_highest_expected_value": {
+      "no_review_booking_share": 0.01328,
+      "booked_nightly_price_usd": 157.00385
+    },
+    "blend_lambda_0.3": {
+      "no_review_booking_share": 0.01234,
+      "booked_nightly_price_usd": 137.86116
+    },
+    "logged_random_order": {
+      "no_review_booking_share": 0.02445,
+      "booked_nightly_price_usd": 139.43462
+    }
+  },
+  "crossfit": {
+    "B1_reviews_first": {
+      "bookings_cross": 0.138384,
+      "bookings_same": 0.138384,
+      "value_cross": 46.788489,
+      "value_same": 46.788489
+    },
+    "B2_cheapest_first": {
+      "bookings_cross": 0.13693,
+      "bookings_same": 0.13693,
+      "value_cross": 35.437115,
+      "value_same": 35.437115
+    },
+    "M1_most_likely_booked": {
+      "bookings_cross": 0.152519,
+      "bookings_same": 0.152602,
+      "value_cross": 44.399135,
+      "value_same": 44.426716
+    },
+    "M2_highest_expected_value": {
+      "bookings_cross": 0.142268,
+      "bookings_same": 0.142392,
+      "value_cross": 50.358243,
+      "value_same": 50.416347
+    },
+    "blend_lambda_0.3": {
+      "bookings_cross": 0.15129,
+      "bookings_same": 0.151403,
+      "value_cross": 47.016864,
+      "value_same": 47.059523
+    }
+  }
 }

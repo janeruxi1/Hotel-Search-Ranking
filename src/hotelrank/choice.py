@@ -127,8 +127,9 @@ def probabilities(d: ChoiceData, beta: np.ndarray) -> tuple[np.ndarray, np.ndarr
 
 
 def loglik(d: ChoiceData, beta: np.ndarray) -> float:
-    p, _ = probabilities(d, beta)
-    return float(np.log(p[d.chosen]).sum())
+    """Sum of log choice probabilities, computed as u - logsumexp so it never takes log(0)."""
+    _, lse = probabilities(d, beta)
+    return float(utilities(d, beta)[d.chosen].sum() - lse.sum())
 
 
 def _score_parts(d: ChoiceData, w: np.ndarray) -> np.ndarray:

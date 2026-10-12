@@ -41,7 +41,7 @@ import pandas as pd
 
 from hotelrank import audit, choice, policy, position
 from hotelrank.data import FIGURES_DIR, ROOT as PROJECT_ROOT, load
-from hotelrank.records import write_metrics
+from hotelrank.records import show_verdict, write_metrics
 
 N_BOOT = int(os.environ.get("HOTELRANK_N_BOOT", 200))
 COLUMNS = ["srch_id", "position", "random_bool", "click_bool", "booking_bool", "price_usd", "prop_starrating",
@@ -121,7 +121,36 @@ decision = policy.apply_decision_rule(result)
 decision
 
 # %% [markdown]
-# ## 5. Beyond the rule (exploratory)
+# ## 5. The other guardrails in the metric framework
+#
+# `reports/metrics_framework.md` (phase 0) also set two guardrails for any ranking change: the
+# share of bookings going to hotels with no reviews should not rise above the baseline's, and the
+# price of the booked hotel should be reported, since a large drop signals revenue risk. Both are
+# expected values under the booking model; the blend from section 7 is included.
+
+# %%
+p_hat = policy.Params.from_vector(fit.names, fit.beta)
+scores = policy.policy_scores(evalset, p_hat)
+scores["blend_lambda_0.3"] = policy.blend_scores(evalset, p_hat, 0.3)
+guardrails = pd.DataFrame({k: policy.guardrail_metrics(evalset, p_hat, policy.assign_slots(evalset, s))
+                           for k, s in scores.items()}).T
+guardrails.loc["logged_random_order"] = policy.guardrail_metrics(evalset, p_hat, evalset.slots)
+guardrails.round(4)
+
+# %% [markdown]
+# ## 6. Does the evaluator flatter its own rankings?
+#
+# The model rankings are built and scored by the same model, which could favour them over the
+# baselines (a ranking tuned to a model's errors looks good to that model). Cross-fitting checks
+# this: the training searches are split in half, each half's model builds the rankings and the
+# other half's model scores them.
+
+# %%
+crossfit = policy.crossfit_check(x[~test], evalset)
+crossfit.round(5)
+
+# %% [markdown]
+# ## 7. Beyond the rule (exploratory)
 #
 # The rule picks the model ranking by bookings alone. A family of rankings between M1 (most
 # likely to be booked) and M2 (highest expected value) shows the trade-off between the two
@@ -140,7 +169,7 @@ print(f"blends that beat reviews-first on both metrics: {len(dominates_b1)} of {
 frontier.round(4)
 
 # %% [markdown]
-# ## 6. Figure
+# ## 8. Figure
 
 # %%
 labels = {"B1_reviews_first": "Reviews first", "B2_cheapest_first": "Cheapest first",
@@ -197,8 +226,60 @@ record = {
                  for k, (b, v) in result["point"].items()},
     "decision": decision,
     "frontier_exploratory": frontier.round(6).to_dict(orient="records"),
+    "guardrails": {k: {c: round(float(v), 5) for c, v in r.items()} for k, r in guardrails.iterrows()},
+    "crossfit": {k: {f"{m}_{'same' if s == 'same model' else 'cross'}": round(float(r[(m, s)]), 6)
+                     for m, s in r.index} for k, r in crossfit.iterrows()},
 }
 out_path = write_metrics("04_policy_evaluation", record, SOURCE)
 print("wrote", out_path.relative_to(PROJECT_ROOT) if SOURCE == "real" else out_path.name)
 if SOURCE == "real":
     fig.savefig(FIGURES_DIR / "04_policy_evaluation.png", dpi=150, bbox_inches="tight")
+
+# %% [markdown]
+# ## Verdict
+#
+# Which ranking to take into an A/B test, by the rule written down before the evaluation. The verdict is rendered from `record`, the same dictionary written to
+# `reports/metrics/04_policy_evaluation.json`, so the summary cannot drift from the analysis above.
+
+# %%
+dec, pol, ev = record["decision"], record["policies"], record["evaluator"]
+b_star, m_star = dec["B_star"], dec["M_star"]
+cf = dec["cheapest_first_vs_reviews_first"]
+base = pol[b_star]
+both = [f for f in record["frontier_exploratory"]
+        if f["bookings"] > base["bookings_per_search"] and f["value"] > base["value_per_search_usd"]]
+best = max(both, key=lambda f: f["bookings"]) if both else None
+sl = ev["order_luck_slope"]
+verdict = [
+    f"By the pre-declared rule (`reports/decision_rule.md`) the ranking to test is: {labels[dec['recommend']]}.",
+    f"The strongest model ranking, {labels[m_star]}, raises expected bookings {dec['bookings_rel_change']:+.1%} "
+    f"against {labels[b_star]} (95% interval of the difference [{dec['bookings_diff_ci'][0]:+.4f}, "
+    f"{dec['bookings_diff_ci'][1]:+.4f}] per search) and changes booking value {dec['value_rel_change']:+.1%}."
+    + (f" It fails: {'; '.join(dec['failed'])}." if dec["failed"] else " It passes both conditions."),
+    f"Cheapest first against reviews first: bookings {cf['bookings_diff']:+.5f} per search "
+    f"[{cf['bookings_diff_ci'][0]:+.5f}, {cf['bookings_diff_ci'][1]:+.5f}] and booking value {cf['value_rel_change']:+.0%}. "
+    + ("Putting cheaper hotels up loses on both." if cf["bookings_diff_ci"][1] < 0 and cf["value_rel_change"] < 0
+       else "The evidence does not show cheapest first losing on both."),
+    (f"Exploratory, outside the rule: {len(both)} of {len(record['frontier_exploratory'])} blends of the two model "
+     f"rankings beat {labels[b_star]} on both metrics; the best on bookings (weight {best['lambda']:.1f} on value) gives "
+     f"{best['bookings']:.4f} bookings and ${best['value']:.2f} per search. That makes it a candidate arm for the A/B "
+     "test, not a result." if best else
+     f"Exploratory, outside the rule: no blend of the model rankings beats {labels[b_star]} on both metrics."),
+    (lambda g, gb: f"Framework guardrails: bookings at hotels with no reviews are {g['B1_reviews_first']['no_review_booking_share']:.2%} "
+     f"under reviews first, {g['B2_cheapest_first']['no_review_booking_share']:.2%} under cheapest first and "
+     f"{gb['no_review_booking_share']:.2%} under the λ = 0.3 blend; the blend's booked hotel costs "
+     f"${gb['booked_nightly_price_usd']:.0f} a night against ${g['B1_reviews_first']['booked_nightly_price_usd']:.0f} under "
+     "reviews first, so it wins on value through more bookings, not dearer ones.")(
+        record["guardrails"], record["guardrails"]["blend_lambda_0.3"]),
+    (lambda c: f"The evaluator does not flatter its own rankings: scored by a model fitted on the other half of the "
+     f"training searches, {labels[m_star]} gives {c[m_star]['bookings_cross']:.4f} bookings per search against "
+     f"{c[m_star]['bookings_same']:.4f} when the same model builds and scores it.")(record["crossfit"]),
+    f"Caveat: the evaluator is calibrated overall ({ev['predicted_booking_rate']:.2%} predicted against "
+    f"{ev['observed_booking_rate']:.2%} observed), but the order-luck slope is {sl['slope']:.2f} "
+    f"(95% CI [{sl['ci'][0]:.2f}, {sl['ci'][1]:.2f}])"
+    + (", which includes zero: the logged data cannot confirm that reordering changes booking. Every gain above is "
+       "model-implied, and only an online test can confirm it." if sl["ci"][0] <= 0 <= sl["ci"][1] else
+       ". Reordering does move booking in the logged data, which supports the evaluator's mechanism."),
+]
+show_verdict("Phase 4 verdict: ranking policies", verdict,
+             "Phase 5 writes the decision memo and sizes the A/B test.")

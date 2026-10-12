@@ -57,7 +57,7 @@ Facts from the 2026-10-09 profile, and the design consequence of each:
 | Every search has at least one click; at most one booking | Results describe searches with engagement, not all searches. Stated in every headline. |
 | 93.9% of algorithm-arm searches end in a booking vs 13.0% of random-arm searches | The two arms were **sampled differently**. Never compare booking rates *between* arms as an effect of randomization; compare *within* each arm. |
 | Position 5 nearly empty (about 6% of the rows at positions 1–4) | A reserved slot; audit it and treat positions as slots actually shown. |
-| Price: median $122, zeros, max $3,018,128; rises only mildly with length of stay | Mostly nightly prices. Use **price relative to the other hotels in the same search**, which removes units and currency issues; trim extreme values with a stated rule. |
+| Price: median $122, a few zeros, a maximum above $19 million; rises only mildly with length of stay | Mostly nightly prices. Use **price relative to the other hotels in the same search**, which removes units and currency issues; trim extreme values with a stated rule. |
 | Price was **not** randomized | Price and promotion effects are observational within-search associations, adjusted for hotel quality. Never called causal. |
 | Competitor-price fields 55–98% missing | Not used for headline results; one exploratory check at most. |
 
@@ -100,16 +100,20 @@ Phase numbers match notebook numbers: notebook `0N_*` is phase N.
 | 2 | Position effects | done | `notebooks/02_position_effects` → naive vs randomized curves with search-clustered intervals; overstatement factor; comparison with Compiani et al. |
 | 3 | Choice model | done | `notebooks/03_choice_model` → conditional logit on the random arm; dollar value of a position and of a promotion; hotel-price control; hold-out validation |
 | 4 | Ranking policies | done | decision rule committed first; `notebooks/04_policy_evaluation` → expected bookings and booking value per search per policy with intervals |
-| 5 | Decision memo & A/B test | next | `reports/decision_memo.md`, A/B sizing; memo numbers checked by CI against the records |
-| 6 | Packaging | | README, tests, CI on the synthetic fixture, Streamlit demo on derived results only |
+| 5 | Decision memo & A/B test | done | `reports/decision_memo.md`, A/B sizing; memo numbers checked by CI against the records |
+| 6 | Packaging | done | README, tests, CI on the synthetic fixture, Streamlit demo on derived results only |
 
 ## Methods notes
 
 - **Uncertainty:** bootstrap over searches (the unit of randomization), never over rows.
-- **Position model:** position-based model: P(click) = examination(position) × attractiveness(hotel, search).
-  Examination is estimated from the random arm; attractiveness from the choice model.
+- **Position model (as planned):** P(click) = examination(position) × attractiveness(hotel, search).
+  **As built:** a conditional logit on the random arm with one dummy per displayed slot plus hotel
+  attributes, which estimates both in one model (notebook 03); notebook 02 measures the
+  position curves directly with a balanced panel and a within-search linear probability model.
 - **Validation of the offline evaluator:** apply it to the random arm's *logged* order and check that the
-  predicted booking rate matches the observed one.
+  predicted booking rate matches the observed one (done: calibration by decile), test the mechanism
+  directly (order-luck slope), and check that it does not flatter rankings built from the same model
+  (cross-fitting on two halves of the training searches).
 - **Benchmark:** Compiani, Lewis, Peng & Wang, "Trade-Offs Between Ranking Objectives" (arXiv 2210.16408)
   estimate position effects on the same randomized sessions; report how the estimates compare.
 

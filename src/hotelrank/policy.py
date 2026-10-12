@@ -158,7 +158,39 @@ def outcomes(e: EvalSet, p: Params, slots: np.ndarray, weights: np.ndarray | Non
         weights = np.ones(e.n_searches)
     W = weights.sum()
     return {"bookings": float(book @ weights / W), "value": float(value @ weights / W),
-            "per_search_bookings": book, "per_search_value": value}
+            "per_search_bookings": book, "per_search_value": value, "row_probs": pb}
+
+
+def guardrail_metrics(e: EvalSet, p: Params, slots: np.ndarray) -> dict:
+    """The two guardrails in reports/metrics_framework.md, as expected values under ``slots``:
+    the share of bookings that go to hotels with no reviews, and the nightly price of the
+    average booked hotel."""
+    pb = outcomes(e, p, slots)["row_probs"]
+    return {"no_review_booking_share": float(pb @ e.no_reviews / pb.sum()),
+            "booked_nightly_price_usd": float(pb @ e.price / pb.sum())}
+
+
+def crossfit_check(x_train: pd.DataFrame, e: EvalSet, lam: float = 0.3, ridge: float = RIDGE) -> pd.DataFrame:
+    """Does the evaluator flatter the rankings built from the same model?
+
+    The training searches are split in two halves; each half's model builds the model rankings,
+    and the *other* half's model scores them (cross), next to the same model scoring its own
+    rankings (same). Baselines do not use the model, so they are only scored. Results are
+    averaged over the two directions.
+    """
+    half = ((x_train["srch_id"] // 5) % 2 == 0).to_numpy()
+    fits = [fit_booking_model(x_train[half], ridge), fit_booking_model(x_train[~half], ridge)]
+    params = [Params.from_vector(f.names, f.beta) for f in fits]
+    rows = []
+    for i, j in ((0, 0), (1, 1), (0, 1), (1, 0)):
+        build, score = params[i], params[j]
+        sc = policy_scores(e, build)
+        sc[f"blend_lambda_{lam}"] = blend_scores(e, build, lam)
+        for k, s in sc.items():
+            o = outcomes(e, score, assign_slots(e, s))
+            rows.append({"policy": k, "scoring": "same model" if i == j else "other half's model",
+                         "bookings": o["bookings"], "value": o["value"]})
+    return pd.DataFrame(rows).groupby(["policy", "scoring"])[["bookings", "value"]].mean().unstack("scoring")
 
 
 def policy_scores(e: EvalSet, p: Params) -> dict[str, np.ndarray]:
@@ -257,7 +289,7 @@ def evaluator_calibration(e: EvalSet, fit_: choice.ChoiceFit, bins: int = 10) ->
     return pd.DataFrame({"pred": pred, "obs": e.booked_any, "bin": q}).groupby("bin").mean()
 
 
-def order_luck_check(e: EvalSet, fit_: choice.ChoiceFit, n_shuffles: int = 10, bins: int = 5,
+def order_luck_check(e: EvalSet, fit_: choice.ChoiceFit, n_shuffles: int = 20, bins: int = 5,
                      seed: int = 0) -> pd.DataFrame:
     """The sharpest test of the mechanism the policies rely on.
 
@@ -266,17 +298,27 @@ def order_luck_check(e: EvalSet, fit_: choice.ChoiceFit, n_shuffles: int = 10, b
     is the search's "order luck": positive when attractive hotels happened to land on top.
     If the model is right, searches with more luck should book more than their shuffled
     average by about the predicted amount.
+
+    The shuffled average is estimated twice, from independent sets of ``n_shuffles`` shuffles:
+    one set for the predicted uplift, the other for the observed one. With a single set, its
+    Monte Carlo error enters both sides with the same sign and pulls the slope towards 1 even
+    when order does not matter. With independent sets the slope is unbiased at 0; the remaining
+    Monte Carlo error in the predicted side attenuates it slightly (about 1/(1 + 1/n_shuffles)).
     """
     rng = np.random.default_rng(seed)
     p = Params.from_vector(fit_.names, fit_.beta)
     logged = outcomes(e, p, e.slots)["per_search_bookings"]
-    shuffled = np.zeros(e.n_searches)
-    for _ in range(n_shuffles):
-        shuffled += outcomes(e, p, assign_slots(e, rng.random(len(e.slots))))["per_search_bookings"]
-    shuffled /= n_shuffles
-    luck = logged - shuffled
+
+    def shuffled_mean() -> np.ndarray:
+        acc = np.zeros(e.n_searches)
+        for _ in range(n_shuffles):
+            acc += outcomes(e, p, assign_slots(e, rng.random(len(e.slots))))["per_search_bookings"]
+        return acc / n_shuffles
+
+    shuffled_x, shuffled_y = shuffled_mean(), shuffled_mean()
+    luck = logged - shuffled_x
     q = pd.qcut(luck, bins, labels=False, duplicates="drop")
-    df = pd.DataFrame({"predicted_uplift": luck, "observed_uplift": e.booked_any - shuffled, "bin": q})
+    df = pd.DataFrame({"predicted_uplift": luck, "observed_uplift": e.booked_any - shuffled_y, "bin": q})
     out = df.groupby("bin").agg(searches=("bin", "size"), predicted_uplift=("predicted_uplift", "mean"),
                                 observed_uplift=("observed_uplift", "mean"))
     out["observed_se"] = df.groupby("bin")["observed_uplift"].std() / np.sqrt(out["searches"])

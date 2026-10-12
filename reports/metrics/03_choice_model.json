@@ -3,11 +3,13 @@
   "sample": {
     "click": {
       "rows": 2569365,
-      "searches": 106614
+      "searches": 106614,
+      "dropped": []
     },
     "booking": {
       "rows": 357965,
-      "searches": 15203
+      "searches": 15203,
+      "dropped": []
     }
   },
   "median_price_usd": 128.65,

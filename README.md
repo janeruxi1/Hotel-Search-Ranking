@@ -3,9 +3,11 @@
 [![CI](https://github.com/janeruxi1/Hotel-Search-Ranking/actions/workflows/ci.yml/badge.svg)](https://github.com/janeruxi1/Hotel-Search-Ranking/actions)
 [![Python](https://img.shields.io/badge/python-3.10%2B-blue)](https://www.python.org/)
 
-> **Work in progress.** Phases 0–4 of 6 are done: plan and data preparation, then notebooks
-> 01 audit, 02 position effects, 03 choice model and 04 ranking policies. Every result below
-> comes from `reports/metrics/`; nothing is quoted before the code that produces it has run.
+[![Live demo](https://img.shields.io/badge/Streamlit-Live%20demo-FF4B4B?logo=streamlit)](https://janeruxi1-hotel-search-ranking.streamlit.app/)
+
+**[Decision memo](reports/decision_memo.md)** · **[Live demo](https://janeruxi1-hotel-search-ranking.streamlit.app/)** ·
+**[Notebooks](notebooks/)** · Every number below comes from `reports/metrics/`, and CI checks the key
+numbers quoted here and in the memo against those records.
 
 Top search positions get far more clicks, but Expedia's ranking already puts its most
 attractive hotels there, so part of the top slots' advantage belongs to the hotels, not the
@@ -16,6 +18,25 @@ measures what drives the choice within a search, and evaluates which ranking to 
 9,917,530 hotel impressions from 399,344 searches (November 2012 – June 2013), 30.4% of them
 shown in random order. Real data, not simulated. The data belong to Expedia and are not
 redistributed here; see [`data/raw/README.md`](data/raw/README.md).
+
+**What the project shows:** separating a causal effect from selection using randomized traffic
+already in the logs; a discrete choice model that prices position, promotions and quality in
+dollars; offline evaluation of ranking policies against a decision rule written before the
+results; and the A/B test that would settle what offline analysis cannot.
+
+## Recommendation
+
+From the [decision memo](reports/decision_memo.md):
+
+- **Don't test "cheapest first"**, the change originally proposed: offline it loses to a simple
+  reviews-first sort on both bookings and booking value.
+- **A/B test two candidates against the current ranking:** reviews first (the pre-declared rule's
+  pick) and a blend of the model rankings (exploratory: better on both metrics offline, found after looking).
+- **Size:** 616,042 clicked searches per arm, set by the 2% booking-value guardrail rather than
+  by the booking lift (114,487 per arm). The sizing discounts the offline lift because the check
+  of its mechanism was inconclusive; the margin of the guardrail is a business decision.
+
+![A/B test power](reports/figures/05_ab_test_power.png)
 
 ## Which ranking to test
 
@@ -39,10 +60,15 @@ was committed before this analysis ([`reports/decision_rule.md`](reports/decisio
   metrics in point estimates (for example, 15.14 bookings per 100 searches and $47.04 per search). The rule only
   considered the bookings-maximising model ranking; the blend is the natural candidate for a test,
   flagged as found after the fact rather than substituted for the rule's answer.
+- **Two robustness checks.** The framework's other guardrails hold for the blend (1.23% of
+  bookings at hotels with no reviews against 1.31% for reviews first and 2.81% for cheapest first;
+  booked hotel $138 a night against $151), and cross-fitting shows the evaluator does not flatter
+  rankings built from its own model (15.25 against 15.26 bookings per 100 searches for the best
+  model ranking, scored by a model fitted on other searches).
 - **The biggest caveat:** the gains come from the model's view that a better top of the page makes
   a booking more likely at all. On held-out searches, the evaluator is well calibrated overall
   (13.33% predicted vs 13.18% observed), but the direct check of that mechanism
-  is inconclusive (slope 0.35, 95% interval −0.28 to 0.98; 1 would confirm it, 0 would refute it).
+  is inconclusive (slope 0.37, 95% interval −0.28 to 1.02; 1 would confirm it, 0 would refute it).
   Offline evaluation can choose what to test; only an A/B test can say how much it is worth.
 
 ![Policy evaluation](reports/figures/04_policy_evaluation.png)
@@ -60,7 +86,9 @@ On searches that show a hotel in every slot from 1 to 30 (57% of searches in eac
 
 - **Reading position effects from ranked traffic overstates them about 3.4-fold** at position 30
   (95% interval 3.2–3.7) and 1.6-fold at position 10. Bookings show the same pattern: 19.6× naive
-  against 7.9× random, a 2.5-fold overstatement (2.0–3.0).
+  against 7.9× random, a 2.5-fold overstatement (2.0–3.0). The click comparison is the cleaner
+  one: the release kept far more booking searches in the ranked arm, so the booking curves come
+  from differently selected samples.
 - **Controlling for observed hotel attributes does not fix the naive estimate** (16.8× → 11.1×,
   against about 4.4× from the randomized traffic). The most likely reason is that the ranking uses
   information the data does not contain; a linear adjustment is also a crude correction.
@@ -135,6 +163,7 @@ python notebooks/01_audit.py        # writes reports/metrics/01_audit.json and f
 python notebooks/02_position_effects.py
 python notebooks/03_choice_model.py
 python notebooks/04_policy_evaluation.py
+python notebooks/05_ab_test_design.py
 pytest
 ```
 
@@ -150,6 +179,27 @@ python scripts/build_notebooks.py --check     # .ipynb still match their .py sou
 Without the data, `HOTELRANK_SYNTHETIC=1 python notebooks/01_audit.py` runs everything on a
 synthetic table with the same columns; this is what CI does. Synthetic runs never overwrite
 `reports/metrics/`.
+
+## Repository layout
+
+```
+reports/decision_memo.md     the recommendation, under the pre-declared rule
+reports/decision_rule.md     the rule, committed before phase 4 ran
+reports/metrics/*.json       every result, written by the notebooks (aggregates only)
+notebooks/0N_*.py / .ipynb   one notebook per phase; .py is the source, .ipynb is executed on real data
+src/hotelrank/               audit, position effects, choice model, policy evaluation, test sizing, demo helpers
+app/streamlit_app.py         the live demo; reads only reports/metrics
+tests/                       unit tests, notebook sync, demo smoke tests, memo/README numbers against records
+```
+
+## Run the demo locally
+
+```bash
+pip install -r app/requirements.txt
+streamlit run app/streamlit_app.py
+```
+
+The demo needs no data download: it reads the aggregate records in `reports/metrics/`.
 
 ## Related projects
 

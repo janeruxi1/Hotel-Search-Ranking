@@ -31,7 +31,7 @@ import pandas as pd
 
 from hotelrank import audit
 from hotelrank.data import FIGURES_DIR, PRICE_CAP, PRICE_SORT_RHO, RESERVED_SLOTS, ROOT as PROJECT_ROOT, load
-from hotelrank.records import write_metrics
+from hotelrank.records import show_verdict, write_metrics
 
 COLUMNS = ["srch_id", "date_time", "site_id", "prop_id", "srch_destination_id", "position", "random_bool",
            "click_bool", "booking_bool", "price_usd", "srch_length_of_stay", "prop_starrating",
@@ -214,3 +214,35 @@ if SOURCE == "real":
     fig2.savefig(FIGURES_DIR / "01_random_arm_balance.png", dpi=150)
     flags.reset_index().rename(columns={"index": "srch_id"}).to_parquet(
         PROJECT_ROOT / "data" / "interim" / "search_flags.parquet", index=False)
+
+# %% [markdown]
+# ## Verdict
+#
+# What the audit establishes, and the rules the later phases inherit. The verdict is rendered from `record`, the same dictionary written to
+# `reports/metrics/01_audit.json`, so the summary cannot drift from the analysis above.
+
+# %%
+a, r = record["arms"]["algorithm"], record["arms"]["random"]
+corr = record["balance_within_search_corr"]["clean"]
+s = record["analysis_sample"]
+fill = [v for arm in record["reserved_slots_vs_neighbours"].values() for v in arm.values()]
+verdict = [
+    f"{'The data matches the published release' if SOURCE == 'real' else 'Synthetic stand-in data'}: {shape['impressions']:,} impressions in {shape['searches']:,} searches, "
+    f"{shape['date_min']} to {shape['date_max']}. Every search has a click and at most one booking, so this is a "
+    "selected sample of engaged searches: all rates are conditional on at least one click.",
+    f"The two arms are not comparable on booking: {a['searches_with_booking']:.1%} of algorithm-order searches book "
+    f"against {r['searches_with_booking']:.1%} of random-order searches. Every comparison is made within an arm.",
+    f"Positions {', '.join(map(str, RESERVED_SLOTS))} are filled at only {min(fill):.1%}-{max(fill):.1%} of their "
+    "neighbours' rate. They are reserved slots, so they are left out of position curves and choice sets.",
+    f"{record['price_sorted_share']['algorithm']:.1%} of algorithm-order and {record['price_sorted_share']['random']:.1%} "
+    "of random-order searches are sorted by price: the user re-sorted, so position no longer reflects the ranking "
+    "being studied. They are dropped.",
+    f"The random arm is close to random, not perfectly random: within a search, corr(position, stars) is "
+    f"{corr['random']['prop_starrating']:+.3f} against {corr['algorithm']['prop_starrating']:+.3f} in algorithm order. "
+    "Phase 2 therefore reports attribute-adjusted curves next to the raw ones.",
+    f"Analysis sample: {s['searches_kept']['algorithm']:,} algorithm-order and {s['searches_kept']['random']:,} "
+    f"random-order searches ({s['impressions_kept']:,} impressions), after dropping {s['searches_bad_price']:,} searches "
+    f"with impossible prices and {s['searches_price_sorted']:,} price-sorted searches.",
+]
+show_verdict("Phase 1 verdict: data audit", verdict,
+             "Phase 2 uses the random arm to measure how much position itself changes clicks and bookings.")

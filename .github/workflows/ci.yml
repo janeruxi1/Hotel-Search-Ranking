@@ -20,9 +20,9 @@ jobs:
           python-version: ${{ matrix.python-version }}
           cache: pip
       - name: Install
-        run: pip install -r requirements.txt ruff==0.6.9
+        run: pip install -r requirements.txt -r app/requirements.txt ruff==0.6.9   # streamlit: the demo smoke test
       - name: Lint
-        run: ruff check src tests scripts notebooks
+        run: ruff check src tests scripts notebooks app
       - name: Tests
         run: pytest -q
       - name: Notebooks match their .py sources

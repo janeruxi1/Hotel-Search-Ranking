@@ -32,7 +32,7 @@ import pandas as pd
 
 from hotelrank import audit, position
 from hotelrank.data import FIGURES_DIR, ROOT as PROJECT_ROOT, load
-from hotelrank.records import write_metrics
+from hotelrank.records import show_verdict, write_metrics
 
 N_BOOT = int(__import__("os").environ.get("HOTELRANK_N_BOOT", 200))
 COLUMNS = ["srch_id", "position", "random_bool", "click_bool", "booking_bool", "price_usd", "prop_starrating",
@@ -120,7 +120,7 @@ controls = {out: {nm: {"beta": round(float(b), 5), "se": round(float(s), 5)}
 pd.DataFrame(adjusted_ratios)
 
 # %% [markdown]
-# ## 3. Comparison with the published estimate
+# ## 4. Comparison with the published estimate
 #
 # Compiani, Lewis, Peng and Wang (arXiv 2210.16408) estimate, on the same randomized sessions,
 # an average position effect of 0.14 percentage points per position on clicks (average click
@@ -143,7 +143,7 @@ for out, (paper_slope, paper_mean) in {"click_bool": (0.14, 4.39), "booking_bool
 pd.DataFrame(benchmark)
 
 # %% [markdown]
-# ## 4. Figure
+# ## 5. Figure
 
 # %%
 fig, axes = plt.subplots(1, 2, figsize=(11, 4), sharey=False)
@@ -187,3 +187,44 @@ out_path = write_metrics("02_position_effects", record, SOURCE)
 print("wrote", out_path.relative_to(PROJECT_ROOT) if SOURCE == "real" else out_path.name)
 if SOURCE == "real":
     fig.savefig(FIGURES_DIR / "02_position_effects.png", dpi=150, bbox_inches="tight")
+
+# %% [markdown]
+# ## Verdict
+#
+# What position does to clicks and bookings once the ranking's own choices are taken out. The verdict is rendered from `record`, the same dictionary written to
+# `reports/metrics/02_position_effects.json`, so the summary cannot drift from the analysis above.
+
+# %%
+def r30(key):
+    return record["raw_ratios"][key]["pos1_over_pos30"]
+
+
+fc = record["naive_over_random_ratio"]["click_bool"]["pos1_over_pos30"]
+fb = record["naive_over_random_ratio"]["booking_bool"]["pos1_over_pos30"]
+adj = {k: v["pos1_over_pos30"] for k, v in record["adjusted_ratios"].items()}
+comp = record["composition"]
+bc, bb = record["benchmark_compiani_2022"]["click_bool"], record["benchmark_compiani_2022"]["booking_bool"]
+rc, rb = r30("random/click_bool"), r30("random/booking_bool")
+verdict = [
+    f"Read from Expedia's own ordering, position 1 gets {r30('algorithm/click_bool')['ratio']:.1f}× the clicks of "
+    f"position 30 ({r30('algorithm/booking_bool')['ratio']:.1f}× the bookings). Under random order the same comparison is "
+    f"{rc['ratio']:.1f}× [{rc['lo']:.1f}, {rc['hi']:.1f}] for clicks and {rb['ratio']:.1f}× [{rb['lo']:.1f}, {rb['hi']:.1f}] "
+    "for bookings (95% bootstrap intervals).",
+    f"The naive reading overstates the position effect {fc['factor']:.2f}× [{fc['lo']:.2f}, {fc['hi']:.2f}] for clicks "
+    f"and {fb['factor']:.2f}× [{fb['lo']:.2f}, {fb['hi']:.2f}] for bookings. Most of the apparent drop is the ranking "
+    "putting better hotels on top, not the position itself. The click comparison is the cleaner one: every search "
+    "in both arms has a click, while the release kept far more booking searches in the ranked arm.",
+    f"Adjusting for hotel attributes moves the random arm only modestly ({adj['random/click_bool/raw']:.2f}× to "
+    f"{adj['random/click_bool/adjusted']:.2f}× for clicks) and does not rescue the naive arm "
+    f"({adj['algorithm/click_bool/adjusted']:.2f}×), most likely because the ranking uses information that is not in "
+    "the data. Randomization, not regression, is what identifies the effect here.",
+    f"Pooling searches of different lengths distorts the curve (random-order clicks: "
+    f"{comp['random_click_pos1_over_pos30_pooled']:.2f}× pooled against {comp['random_click_pos1_over_pos30_panel']:.2f}× "
+    "on searches that fill slots 1-30), so all ratios use that balanced panel.",
+    f"The click slope near the top, {bc['ours_pp_per_position']:.3f} pp per position, is in line with the "
+    f"{bc['paper_pp_per_position']:.2f} pp in Compiani et al. (2022) on the same data. The booking slope "
+    f"({bb['ours_pp_per_position']:.4f} against {bb['paper_pp_per_position']:.3f} pp) is not directly comparable: "
+    "the samples and definitions differ.",
+]
+show_verdict("Phase 2 verdict: position effects", verdict,
+             "Phase 3 puts a price on position: what price cut is a move up the list worth?")

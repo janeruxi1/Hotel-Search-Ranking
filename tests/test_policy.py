@@ -83,3 +83,39 @@ def test_evaluator_checks_run(setup):
     cal = policy.evaluator_calibration(e, f)
     luck = policy.order_luck_check(e, f, n_shuffles=3)
     assert len(cal) > 1 and {"slope", "se", "ci"} <= set(luck.attrs["slope"])
+
+
+def test_order_luck_slope_is_unbiased_when_order_does_not_matter(setup):
+    """Feed the check expected outcomes, so the only noise is from the shuffles.
+
+    If bookings do not depend on order, the slope must centre on 0 (a single shared shuffle set
+    gave about 1/3 here); if they follow the model exactly, on 1 / (1 + 1/n_shuffles)."""
+    import dataclasses
+
+    _, f, e = setup
+    beta = np.array([-0.3 * np.log(int(n[4:]) + 1.0) if n.startswith("pos_") else b for n, b in zip(f.names, f.beta)])
+    fit_ = dataclasses.replace(f, beta=beta)
+    p = policy.Params.from_vector(fit_.names, beta)
+    rng = np.random.default_rng(3)
+    order_free = np.mean([policy.outcomes(e, p, policy.assign_slots(e, rng.random(len(e.slots))))["per_search_bookings"]
+                          for _ in range(400)], axis=0)
+    shown = policy.outcomes(e, p, e.slots)["per_search_bookings"]
+
+    def mean_slope(booked):
+        e_b = dataclasses.replace(e, booked_any=booked)
+        return np.mean([policy.order_luck_check(e_b, fit_, n_shuffles=2, seed=s).attrs["slope"]["slope"] for s in range(8)])
+
+    assert abs(mean_slope(order_free)) < 0.05
+    assert mean_slope(shown) == pytest.approx(1 / (1 + 1 / 2), abs=0.06)
+
+
+def test_guardrails_and_crossfit_run(setup):
+    x, f, e = setup
+    p = policy.Params.from_vector(f.names, f.beta)
+    g = policy.guardrail_metrics(e, p, e.slots)
+    assert 0 <= g["no_review_booking_share"] <= 1 and g["booked_nightly_price_usd"] > 0
+    test = (x["srch_id"] % 5 == 0).to_numpy()
+    cf = policy.crossfit_check(x[~test], e)
+    assert set(cf.columns.get_level_values("scoring")) == {"same model", "other half's model"}
+    # four policies plus the blend
+    assert len(cf) == 5

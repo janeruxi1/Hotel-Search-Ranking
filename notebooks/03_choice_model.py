@@ -42,7 +42,7 @@ import pandas as pd
 
 from hotelrank import audit, choice, position
 from hotelrank.data import FIGURES_DIR, ROOT as PROJECT_ROOT, load
-from hotelrank.records import write_metrics
+from hotelrank.records import show_verdict, write_metrics
 
 COLUMNS = ["srch_id", "position", "random_bool", "click_bool", "booking_bool", "price_usd", "prop_starrating",
            "prop_review_score", "prop_brand_bool", "prop_location_score1", "promotion_flag", "prop_id"]
@@ -75,7 +75,7 @@ data = {"click": choice.build(x, "click_bool"), "booking": choice.build(x, "book
 fits = {k: choice.fit(d) for k, d in data.items()}
 main = fits["click"]
 print({k: d.meta for k, d in data.items()}, {k: f.converged for k, f in fits.items()})
-main.table().loc[choice.ATTRIBUTES].round(4)
+main.table().loc[[a for a in choice.ATTRIBUTES if a in main.names]].round(4)
 
 # %% [markdown]
 # **Reading the coefficients.** Utility is on a log-odds scale. The log-price coefficient is a
@@ -149,9 +149,10 @@ price_identification
 # for them is high, the coefficient is pulled toward zero, which would make the dollar values in
 # section 2 **too large**. They are best read as upper bounds on what a position is worth.
 #
-# ## 4. Do upscale searchers care less about price?
+# ## 4. Is demand for upscale hotels less price-sensitive?
 #
-# Price sensitivity for 4–5 star hotels versus the rest, from interaction terms.
+# Price sensitivity for 4–5 star hotels versus 1–3 star hotels, from interaction terms (log price
+# and the hotel's average log price, each interacted with a 4–5 star flag).
 
 # %%
 het_attrs = choice.ATTRIBUTES + ["upscale", "log_price_x_upscale", "hotel_mean_x_upscale"]
@@ -231,3 +232,48 @@ out_path = write_metrics("03_choice_model", record, SOURCE)
 print("wrote", out_path.relative_to(PROJECT_ROOT) if SOURCE == "real" else out_path.name)
 if SOURCE == "real":
     fig.savefig(FIGURES_DIR / "03_choice_model.png", dpi=150, bbox_inches="tight")
+
+# %% [markdown]
+# ## Verdict
+#
+# What drives the choice of hotel within a search, in dollars. The verdict is rendered from `record`, the same dictionary written to
+# `reports/metrics/03_choice_model.json`, so the summary cannot drift from the analysis above.
+
+# %%
+pi, dv, ho = record["price_identification"], record["dollar_values"], record["holdout"]
+het = record["heterogeneity_upscale"]
+gap = max(abs(c["pred"] - c["obs"]) for c in record["calibration"].values())
+
+
+def usd(kind, item):
+    t = dv[kind][item]
+    return f"${t['usd']:.0f} [{t['usd_lo']:.0f}, {t['usd_hi']:.0f}]"
+
+
+consistency = ""
+if SOURCE == "real":
+    from hotelrank.records import read_metrics
+    p2 = read_metrics("02_position_effects")["raw_ratios"]["random/click_bool"]["pos1_over_pos30"]["ratio"]
+    consistency = f", close to the {p2:.1f}× measured directly under random order in phase 2"
+d = het["difference"]
+verdict = [
+    f"Comparing different hotels understates price sensitivity: the price coefficient is "
+    f"{pi['between_and_within_hotels']:.2f} across hotels but {pi['within_hotel']:.2f} when a hotel is compared with "
+    "itself at different prices. Expensive hotels are also better hotels, and the hotel's average price soaks that up.",
+    f"Booking is more price-sensitive than clicking ({record['price_coefficient']['booking']:.2f} against "
+    f"{record['price_coefficient']['click']:.2f} for log price).",
+    f"In dollars, at the median price of ${record['median_price_usd']:.0f}: moving a hotel from position 10 to 1 is "
+    f"worth a price cut of {usd('click', 'position 1 instead of 10')} for clicks and "
+    f"{usd('booking', 'position 1 instead of 10')} for bookings; a promotion flag is worth "
+    f"{usd('click', 'promotion flag')} and {usd('booking', 'promotion flag')}.",
+    f"The model's implied odds for position 1 against position 30 are "
+    f"{record['implied_pos1_over_pos30_odds_click']:.1f}×{consistency}.",
+    f"Choices among 4-5 star hotels are {'more' if d['beta'] < 0 else 'less'} price-sensitive than among "
+    f"1-3 star hotels ({het['price_coef_4_to_5_star']['beta']:.2f} against {het['price_coef_1_to_3_star']['beta']:.2f}, "
+    f"difference {d['beta']:+.2f}, s.e. {d['se']:.2f}).",
+    f"On {ho['searches']:,} held-out searches the model ranks the clicked hotel first {ho['top1_hit_rate']:.1%} of the "
+    f"time against {ho['uniform_top1']:.1%} by chance, and predicted probabilities are within {gap:.3f} of observed "
+    "rates in every decile.",
+]
+show_verdict("Phase 3 verdict: choice model", verdict,
+             "Phase 4 uses a booking version of this model to score alternative rankings offline.")

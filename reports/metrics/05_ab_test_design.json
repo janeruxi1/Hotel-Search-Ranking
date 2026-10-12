@@ -1,0 +1,127 @@
+{
+  "source": "real",
+  "design": {
+    "arms": [
+      "C current ranking",
+      "T1 reviews first",
+      "T2 blend lambda 0.3 (exploratory)"
+    ],
+    "alpha_per_comparison": 0.016667,
+    "power": 0.8,
+    "value_margin": 0.02,
+    "comparisons": [
+      "T1 vs C",
+      "T2 vs C",
+      "T2 vs T1"
+    ],
+    "unit": "visitor (searches analysed)"
+  },
+  "inputs": {
+    "baseline_booking_rate": 0.13258517,
+    "value_raw": {
+      "mean": 38.692395,
+      "sd": 168.060916,
+      "cv": 4.343513,
+      "cap": null
+    },
+    "value_capped_p99": {
+      "mean": 37.663215,
+      "sd": 149.22223,
+      "cv": 3.962015,
+      "cap": 1929.468
+    },
+    "order_luck_slope": 0.3713,
+    "blend_value_vs_t1": 0.00543
+  },
+  "lifts": {
+    "T1 reviews first vs random order": {
+      "offline": 0.0380082963,
+      "discounted": 0.0141124804
+    },
+    "T2 blend vs random order": {
+      "offline": 0.1354181513,
+      "discounted": 0.0502807596
+    },
+    "T2 blend vs T1 reviews first": {
+      "offline": 0.0938430409,
+      "discounted": 0.0348439211
+    }
+  },
+  "booking_n": [
+    {
+      "relative lift": 0.02,
+      "searches per arm": 345357,
+      "note": ""
+    },
+    {
+      "relative lift": 0.03,
+      "searches per arm": 154133,
+      "note": ""
+    },
+    {
+      "relative lift": 0.0348,
+      "searches per arm": 114774,
+      "note": "discounted T2 vs T1"
+    },
+    {
+      "relative lift": 0.05,
+      "searches per arm": 55948,
+      "note": ""
+    },
+    {
+      "relative lift": 0.075,
+      "searches per arm": 25120,
+      "note": ""
+    },
+    {
+      "relative lift": 0.0938,
+      "searches per arm": 16182,
+      "note": "offline T2 vs T1"
+    },
+    {
+      "relative lift": 0.1,
+      "searches per arm": 14273,
+      "note": ""
+    }
+  ],
+  "guardrail_n_by_margin": {
+    "2%": 616042,
+    "3%": 273797,
+    "5%": 98567
+  },
+  "guardrail_n": {
+    "raw": {
+      "cv": 4.3435,
+      "per arm, true difference 0": 740389,
+      "per arm, true difference = T2's offline value gain": 457960
+    },
+    "capped at p99": {
+      "cv": 3.962,
+      "per arm, true difference 0": 616042,
+      "per arm, true difference = T2's offline value gain": 381046
+    }
+  },
+  "n_primary": 114487,
+  "n_guardrail": 616042,
+  "n_per_arm": 616042,
+  "n_total": 1848126,
+  "mde_at_n_per_arm": 0.01496,
+  "simulated_power": 0.7977,
+  "duration_days": [
+    {
+      "clicked searches per day in test": 25000,
+      "days for sample": 74,
+      "days to run": 74
+    },
+    {
+      "clicked searches per day in test": 100000,
+      "days for sample": 19,
+      "days to run": 19
+    },
+    {
+      "clicked searches per day in test": 250000,
+      "days for sample": 8,
+      "days to run": 14
+    }
+  ]
+}
