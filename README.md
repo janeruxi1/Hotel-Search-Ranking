@@ -3,9 +3,10 @@
 [![CI](https://github.com/janeruxi1/Hotel-Search-Ranking/actions/workflows/ci.yml/badge.svg)](https://github.com/janeruxi1/Hotel-Search-Ranking/actions)
 [![Python](https://img.shields.io/badge/python-3.10%2B-blue)](https://www.python.org/)
 
-> **Work in progress.** Phases 0–3 of 7 are done (plan, data preparation, audit, position
-> effects). Results below come from `reports/metrics/01_audit.json` and
-> `02_position_effects.json`; nothing is quoted before the code that produces it has run.
+> **Work in progress.** Phases 0–4 of 7 are done (plan, data preparation, audit, position
+> effects, choice model). Results below come from `reports/metrics/01_audit.json`,
+> `02_position_effects.json` and `03_choice_model.json`; nothing is quoted before the code
+> that produces it has run.
 
 Top search positions get far more clicks, but Expedia's ranking already puts its most
 attractive hotels there, so part of the top slots' advantage belongs to the hotels, not the
@@ -43,6 +44,37 @@ On searches that show a hotel in every slot from 1 to 30 (57% of searches in eac
 
 ![Position effects](reports/figures/02_position_effects.png)
 
+## What drives the choice within a search
+
+A conditional logit on the randomly ordered searches (106,614 searches with one click; 15,203
+with a booking) puts every effect on one scale: the price cut that would move choice
+probability by the same amount. Dollars use the median price in the sample ($129 a night).
+
+| Worth the same as a price cut of… | Clicks | Bookings |
+|---|---|---|
+| Position 1 instead of 2 | $19 (15%) | $10 (8%) |
+| Position 1 instead of 10 | $56 (43%) | $40 (31%) |
+| Position 1 instead of 30 | $77 (60%) | $70 (55%) |
+| A promotion flag | $19 (15%) | $21 (16%) |
+| One more star | $19 (15%) | $16 (13%) |
+| One more review point | $10 (8%) | $15 (11%) |
+
+- **Price sensitivity:** a hotel 10% dearer than usual is clicked about 15% less often (price
+  coefficient −1.75 for clicks, −2.64 for bookings).
+- **Controlling for the hotel's usual price matters:** without it, the price coefficient is
+  −0.79, less than half as large, because dearer hotels tend to be better in ways the data
+  does not record. With it, price sensitivity is identified by the same hotel being cheaper or
+  dearer than usual.
+- **4–5 star hotels see slightly more price sensitivity, not less** (−1.90 against −1.60).
+- **Consistent with the position analysis:** the model implies position 1 vs 30 odds of
+  4.9×, in line with the 4.4–4.9× measured directly.
+- **Out of sample:** on held-out searches the hotel the model rates most likely is the one clicked 14.8% of the time
+  (a random guess: 5.5%), and predicted probabilities are well calibrated.
+- **Caveat:** price was never randomized. If hotels raise prices when demand is high, price
+  sensitivity is understated and the dollar values above are upper bounds.
+
+![Choice model](reports/figures/03_choice_model.png)
+
 ## What the audit found
 
 - **Only searches with at least one click are included**, with at most one booking each, so
@@ -72,6 +104,7 @@ pip install -r requirements.txt
 python scripts/prepare_data.py      # needs data/raw/train.csv, see data/raw/README.md
 python notebooks/01_audit.py        # writes reports/metrics/01_audit.json and figures
 python notebooks/02_position_effects.py
+python notebooks/03_choice_model.py
 pytest
 ```
 

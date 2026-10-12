@@ -76,15 +76,13 @@ Facts from the 2026-10-09 profile, and the design consequence of each:
    evaluated on held-out random-arm searches. Bookings and revenue trade off; show the frontier.
 5. **Pilot.** Size an A/B test that would confirm the chosen ranking.
 
-## Pre-declared decision rule (to be committed before Phase 5 is run)
+## Pre-declared decision rule
 
-Recommend testing a new ranking only if, on held-out random-arm searches, its expected
-bookings per search exceed the best simple baseline (sort by review score or by price) with
-the lower end of a search-level bootstrap 95% interval above zero, and its expected revenue
-per search is not lower by more than 2%. Otherwise recommend the baseline and say why.
-
-The thresholds are placeholders until Phase 3 shows the scale of the numbers; they will be
-fixed and committed in a separate commit before the evaluation runs, as in project 03.
+Fixed in [`reports/decision_rule.md`](reports/decision_rule.md), committed with Phase 4 and
+before any Phase 5 code: four candidate rankings (reviews first, cheapest first, two model
+rankings); a model ranking is recommended for an A/B test only if its expected bookings per
+search beat the better baseline with the 95% interval of the difference above zero, and its
+expected booking value is no more than 2% lower.
 
 ## Staging rule
 
