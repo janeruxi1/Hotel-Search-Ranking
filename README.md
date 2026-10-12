@@ -132,6 +132,15 @@ probability by the same amount. Dollars use the median price in the sample ($129
 
 ![Choice model](reports/figures/03_choice_model.png)
 
+## Data preparation in SQL
+
+The search-level work of the audit is SQL ([`sql/`](sql/)), run by DuckDB directly on the 9.9M-row
+Parquet file: one row per search, the arm summary, the reserved-slot check (`LAG`/`LEAD` over a
+generated grid of slots), the data-quality flags and the analysis sample. The flag for searches the
+user sorted by price is a within-search rank correlation built from window functions. Notebook 01
+saves these flags, and every later notebook reads them. `tests/test_sql.py` checks each query
+against an independent pandas implementation in CI.
+
 ## What the audit found
 
 - **Only searches with at least one click are included**, with at most one booking each, so
@@ -187,6 +196,7 @@ reports/decision_memo.md     the recommendation, under the pre-declared rule
 reports/decision_rule.md     the rule, committed before phase 4 ran
 reports/metrics/*.json       every result, written by the notebooks (aggregates only)
 notebooks/0N_*.py / .ipynb   one notebook per phase; .py is the source, .ipynb is executed on real data
+sql/                         DuckDB SQL for the search-level audit and the analysis sample (used by notebook 01)
 src/hotelrank/               audit, position effects, choice model, policy evaluation, test sizing, demo helpers
 app/streamlit_app.py         the live demo; reads only reports/metrics
 tests/                       unit tests, notebook sync, demo smoke tests, memo/README numbers against records

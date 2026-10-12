@@ -80,7 +80,9 @@ def price_flags(df: pd.DataFrame, searches: pd.DataFrame) -> pd.DataFrame:
     out["bad_price"] = bad.groupby(df["srch_id"]).any().reindex(out.index, fill_value=False)
     rho = within_search_rank_corr(df.loc[~bad], "price_usd")
     out["price_rho"] = rho.reindex(out.index)
-    out["price_sorted"] = out["price_rho"] >= PRICE_SORT_RHO
+    # small lists produce correlations of exactly 0.95; the tolerance keeps the flag independent
+    # of floating-point rounding (sql/00_views.sql uses the same one)
+    out["price_sorted"] = out["price_rho"] >= PRICE_SORT_RHO - 1e-9
     return out
 
 

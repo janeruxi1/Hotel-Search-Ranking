@@ -96,7 +96,7 @@ Phase numbers match notebook numbers: notebook `0N_*` is phase N.
 | # | Phase | Status | Artifact that must exist to call it done |
 |---|---|---|---|
 | 0 | Plan and data preparation | done | `reports/scenario_brief.md`, `reports/metrics_framework.md`, this file; `scripts/prepare_data.py` → `data/interim/train.parquet` with validated row, search and hotel counts; synthetic CI fixture with the same schema |
-| 1 | Audit | done | `notebooks/01_audit` → `reports/metrics/01_audit.json`: arms, selection, reserved slots, price rules, randomization check |
+| 1 | Audit | done | `notebooks/01_audit` → `reports/metrics/01_audit.json`: arms, selection, reserved slots, price rules, randomization check; search-level tables and flags in SQL (`sql/`, DuckDB) |
 | 2 | Position effects | done | `notebooks/02_position_effects` → naive vs randomized curves with search-clustered intervals; overstatement factor; comparison with Compiani et al. |
 | 3 | Choice model | done | `notebooks/03_choice_model` → conditional logit on the random arm; dollar value of a position and of a promotion; hotel-price control; hold-out validation |
 | 4 | Ranking policies | done | decision rule committed first; `notebooks/04_policy_evaluation` → expected bookings and booking value per search per policy with intervals |

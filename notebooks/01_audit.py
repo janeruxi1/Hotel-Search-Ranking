@@ -6,6 +6,12 @@
 # per-search flags (`data/interim/search_flags.parquet`) that define the analysis sample for
 # every later notebook.
 #
+# **The search-level work is SQL.** One row per search, the arm summary, the reserved-slot check,
+# the data-quality flags and the analysis sample come from the queries in [`sql/`](../sql/), run
+# by DuckDB directly on the Parquet file, as they would be in a warehouse. Row-level statistics
+# (prices, balance checks) and the figures stay in pandas. `tests/test_sql.py` checks every SQL
+# rule against an independent pandas implementation in `hotelrank.audit`.
+#
 # Without the real data (CI, or anyone who has not downloaded it) the notebook runs on the
 # synthetic table from `hotelrank.synthetic` and writes nothing to `reports/`.
 
@@ -29,8 +35,8 @@ sys.path.insert(0, str(_project_root() / "src"))
 import matplotlib.pyplot as plt
 import pandas as pd
 
-from hotelrank import audit
-from hotelrank.data import FIGURES_DIR, PRICE_CAP, PRICE_SORT_RHO, RESERVED_SLOTS, ROOT as PROJECT_ROOT, load
+from hotelrank import audit, sql
+from hotelrank.data import FIGURES_DIR, PARQUET, PRICE_CAP, PRICE_SORT_RHO, RESERVED_SLOTS, ROOT as PROJECT_ROOT, load
 from hotelrank.records import show_verdict, write_metrics
 
 COLUMNS = ["srch_id", "date_time", "site_id", "prop_id", "srch_destination_id", "position", "random_bool",
@@ -39,6 +45,7 @@ COLUMNS = ["srch_id", "date_time", "site_id", "prop_id", "srch_destination_id", 
            "visitor_hist_starrating", "visitor_hist_adr_usd", "srch_query_affinity_score",
            "orig_destination_distance", "gross_bookings_usd"]
 df, SOURCE = load(COLUMNS)
+con = sql.connect(PARQUET if SOURCE == "real" else df)  # builds the views in sql/00_views.sql
 print(f"source: {SOURCE}, {len(df):,} impressions")
 
 # %% [markdown]
@@ -47,7 +54,8 @@ print(f"source: {SOURCE}, {len(df):,} impressions")
 # `random_bool = 1` marks searches whose results Expedia showed in random order.
 
 # %%
-searches = audit.per_search(df)
+print(sql.SQL_DIR.joinpath("01_arm_summary.sql").read_text(encoding="utf-8"))
+searches = sql.search_flags(con)  # one row per search, with the data-quality flags used in section 4
 shape = {
     "impressions": int(len(df)),
     "searches": int(len(searches)),
@@ -57,7 +65,7 @@ shape = {
     "date_min": str(df["date_time"].min().date()),
     "date_max": str(df["date_time"].max().date()),
 }
-arms = audit.arm_summary(searches)
+arms = sql.arm_summary(con)
 print(shape)
 pd.DataFrame(arms)
 
@@ -88,8 +96,9 @@ print(selection)
 # position-effect notebook works with displayed slots and reports the reserved ones separately.
 
 # %%
-occ = audit.slot_occupancy(df)
-reserved = audit.reserved_slot_share(occ)
+print(sql.SQL_DIR.joinpath("02_reserved_slots.sql").read_text(encoding="utf-8"))
+reserved = sql.reserved_slots(con)
+occ = audit.slot_occupancy(df)  # every slot, for the figure
 gaps = audit.gaps_per_search(searches)
 print("reserved slots, impressions relative to neighbours:", reserved)
 print("skipped slots per search:", dict(list(gaps.items())[:6]))
@@ -136,7 +145,7 @@ print(prices)
 #    with and without that adjustment.
 
 # %%
-flags = audit.price_flags(df, searches)
+flags = searches  # bad_price, price_rho and price_sorted come from sql/00_views.sql
 BALANCE_COLS = ["prop_starrating", "prop_review_score", "prop_location_score1", "promotion_flag", "price_usd"]
 keep_price_ok = ~flags["bad_price"]
 keep_clean = keep_price_ok & ~flags["price_sorted"].fillna(False)
@@ -181,14 +190,11 @@ fig2.tight_layout()
 # ## 5. Analysis sample and missing data
 
 # %%
+print(sql.SQL_DIR.joinpath("03_analysis_sample.sql").read_text(encoding="utf-8"))
 sample = {
     "rule": f"drop searches with any price outside (0, {PRICE_CAP:,.0f}]; drop searches sorted by price "
             f"(within-search rank correlation of price with position >= {PRICE_SORT_RHO})",
-    "searches_bad_price": int(flags["bad_price"].sum()),
-    "searches_price_sorted": int((flags["price_sorted"].fillna(False) & ~flags["bad_price"]).sum()),
-    "searches_kept": {name: int((keep_clean & (flags["random"] == flag)).sum())
-                      for flag, name in audit.ARM_NAMES.items()},
-    "impressions_kept": int(keep_clean.reindex(df["srch_id"]).sum()),
+    **sql.analysis_sample(con),
 }
 missing = audit.missing_share(df)
 print(sample)
