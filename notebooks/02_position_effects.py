@@ -122,11 +122,13 @@ pd.DataFrame(adjusted_ratios)
 # %% [markdown]
 # ## 4. Comparison with the published estimate
 #
-# Compiani, Lewis, Peng and Wang (arXiv 2210.16408) estimate, on the same randomized sessions,
-# an average position effect of 0.14 percentage points per position on clicks (average click
-# rate 4.39%) and 0.008 points on bookings (average 0.27%), using sessions with at least 30
-# listings. The comparable number here is the slope of a linear position term, with controls,
-# on random-arm searches with at least 30 results.
+# Compiani, Lewis, Peng and Wang (arXiv 2210.16408) use randomized sessions from the same
+# Expedia release (51,510 in their descriptive sample) and report an average position effect of
+# 0.14 percentage points per position on clicks (average click rate 4.39%) and 0.008 points on
+# bookings (average 0.27%). Their figure averages hotel-specific effects and their sample differs
+# from this one, so the comparison is a sanity check rather than a replication. The comparable
+# number here is the slope of a linear position term, with controls, on random-arm searches with
+# at least 30 results.
 
 # %%
 benchmark = {}

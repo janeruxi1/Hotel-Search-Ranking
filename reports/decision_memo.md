@@ -63,7 +63,7 @@ worth.
 | Arms | C: current ranking · T1: reviews first · T2: model blend (exploratory), equal thirds |
 | Unit | Visitor (searches analysed, with visitor-clustered standard errors) |
 | Primary metric | Booking per search |
-| Guardrail | Booking value per search (capped at the 99th percentile) no more than 2% below control |
+| Guardrail | Booking value per search (capped at the 99th percentile) no more than 2% below control (non-inferiority, one-sided α = 0.025) |
 | Comparisons | T1 vs C, T2 vs C, T2 vs T1, sized at α = 0.0167 each (Bonferroni; Holm in the analysis), power 80% |
 | Size | 616,042 clicked searches per arm, 1,848,126 in total; minimum two full weeks |
 | Detectable lift | 1.5% relative on a 13.3% booking rate |
@@ -83,7 +83,7 @@ candidates (+9.4% offline), discounted to +3.5% because of the inconclusive mech
 ## Decisions needed
 
 1. **Guardrail margin.** At 2% the test needs about 1.85 million clicked searches; at 5% it needs
-   about 0.3 million, and the booking comparison sets the size instead.
+   about 0.34 million (114,487 per arm), and the booking comparison sets the size instead.
 2. **Traffic share.** At 100,000 clicked searches a day entering the test, the 2% version takes
    19 days.
 

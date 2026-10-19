@@ -47,7 +47,7 @@ def _expected():
         f"α = {p5['design']['alpha_per_comparison']:.4f}",
         f"about {p5['n_total'] / 1e6:.2f} million",
         f"about {round(max(p5['guardrail_n_by_margin']['5%'], p5['n_primary']), -3):,} per arm",
-        f"about {max(p5['guardrail_n_by_margin']['5%'], p5['n_primary']) * 3 / 1e6:.1f} million",
+        f"about {max(p5['guardrail_n_by_margin']['5%'], p5['n_primary']) * 3 / 1e6:.2f} million",
         f"{next(d['days to run'] for d in p5['duration_days'] if d['clicked searches per day in test'] == 100_000)} days",
     }
     return memo, shared

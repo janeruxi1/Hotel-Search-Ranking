@@ -1,9 +1,8 @@
 # Project Plan & Design Decisions
 
-Working document for project 04. It records the decisions made before building, so the
-rationale survives past the conversation that produced it. Numbers quoted here come from
-the data profile run on 2026-10-09; every number that reaches the README will be produced
-by committed code and checked by CI, as in projects 01–03.
+Working document. It records the decisions made before building, so the rationale stays on
+record. Numbers quoted here come from the data profile run on 2026-10-09; every number that
+reaches the README is produced by committed code and checked by CI.
 
 ---
 
@@ -18,7 +17,7 @@ Data: Expedia's hotel-search logs released for the ICDM 2013 Kaggle competition
 November 2012 – June 2013. For **30.4% of searches Expedia showed the results in random
 order**. That randomized slice is the project's lever: a real experiment inside real data.
 
-## Positioning — causal inference and decision science first
+## Framing
 
 Headline framing: *"Expedia's ranking makes position 1 look 17× better than position 30 for
 clicks. Its own randomized traffic says about 5× (4.4× after adjusting for a residual tilt).
@@ -32,20 +31,6 @@ bottom positions exist only in long lists, where each hotel's click share is low
 - Hero figure: click and booking rate by position, algorithm-ranked vs randomized.
 - The decision is a ranking policy chosen by expected bookings and revenue, with
   uncertainty, plus the A/B test that would confirm it.
-- Skills line: causal inference with a randomized benchmark · discrete-choice modelling ·
-  off-policy evaluation · experiment design · working with 10M-row real data.
-
-Audience: decision-science, product and marketplace data-science roles (Seattle employers
-such as Expedia and Amazon, and remote roles).
-
-## Portfolio arc this project completes
-
-| Project | Data | Causal setting | What it demonstrates |
-|---|---|---|---|
-| 01 — A/B test | Synthetic | Randomized | Inference when you can experiment |
-| 02 — Churn & retention | Synthetic | Predictive + policy | Turning predictions into budgeted decisions |
-| 03 — RAG evaluation | Synthetic corpus | Evaluation | Measuring an AI system before trusting it |
-| **04 — Hotel search (this)** | **Real, 10M rows** | **Observational, checked against a randomized slice** | **Separating selection from effect, then choosing a policy** |
 
 ## What the data allows — and what it does not
 
@@ -115,7 +100,7 @@ Phase numbers match notebook numbers: notebook `0N_*` is phase N.
   directly (order-luck slope), and check that it does not flatter rankings built from the same model
   (cross-fitting on two halves of the training searches).
 - **Benchmark:** Compiani, Lewis, Peng & Wang, "Trade-Offs Between Ranking Objectives" (arXiv 2210.16408)
-  estimate position effects on the same randomized sessions; report how the estimates compare.
+  estimate position effects on randomized sessions from the same release; report how the estimates compare.
 
 ## Data terms and reproducibility
 

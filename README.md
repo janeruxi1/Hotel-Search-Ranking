@@ -94,9 +94,10 @@ On searches that show a hotel in every slot from 1 to 30 (57% of searches in eac
   information the data does not contain; a linear adjustment is also a crude correction.
 - **The click slope is in line with the published estimate:** with controls, each position down
   costs 0.144 percentage points of click probability (s.e. 0.0015) on searches with at least 30
-  results; Compiani et al. (2022) report 0.14 on the same randomized sessions. Their sample is
-  narrower (the 50 busiest destinations), and relative to the average click rate our slope is
-  somewhat steeper (4.1% against 3.2% of the mean). For bookings the two estimates differ
+  results; Compiani et al. (2022) report an average of 0.14 on randomized sessions from the same
+  release. Their sample differs (51,510 randomized sessions of 5 or more listings) and their figure
+  averages hotel-specific effects; relative to the average click rate our slope is somewhat
+  steeper (4.1% against 3.2% of the mean). For bookings the two estimates differ
   (0.021 against 0.008 points); with different samples I report both rather than force them to agree.
 
 ![Position effects](reports/figures/02_position_effects.png)
