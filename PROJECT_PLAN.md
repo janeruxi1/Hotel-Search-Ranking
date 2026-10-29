@@ -86,7 +86,8 @@ Phase numbers match notebook numbers: notebook `0N_*` is phase N.
 | 3 | Choice model | done | `notebooks/03_choice_model` → conditional logit on the random arm; dollar value of a position and of a promotion; hotel-price control; hold-out validation |
 | 4 | Ranking policies | done | decision rule committed first; `notebooks/04_policy_evaluation` → expected bookings and booking value per search per policy with intervals |
 | 5 | Decision memo & A/B test | done | `reports/decision_memo.md`, A/B sizing; memo numbers checked by CI against the records |
-| 6 | Packaging | done | README, tests, CI on the synthetic fixture, Streamlit demo on derived results only |
+| 6 | Learning to rank (exploratory, added after phase 5) | done | `notebooks/06_learning_to_rank` → LightGBM LambdaMART rankers against the choice-model rankings on the same held-out searches; position-adjusted NDCG; `reports/metrics/06_learning_to_rank.json` |
+| 7 | Packaging | done | README, tests, CI on the synthetic fixture, Streamlit demo on derived results only |
 
 ## Methods notes
 

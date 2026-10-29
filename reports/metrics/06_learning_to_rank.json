@@ -1,0 +1,416 @@
+{
+  "source": "real",
+  "status": "exploratory; not part of the phase 4 pre-declared rule",
+  "sample": {
+    "train_searches": 73196,
+    "early_stopping_searches": 18320,
+    "heldout_searches": 23165,
+    "ranked_train_searches": 91516,
+    "history_searches": 133580,
+    "n_boot": 1000
+  },
+  "rankers": {
+    "L1_core_random": {
+      "features": [
+        "log_price",
+        "hotel_mean_log_price",
+        "prop_starrating",
+        "prop_review_score",
+        "no_reviews",
+        "prop_brand_bool",
+        "prop_location_score1",
+        "promotion_flag"
+      ],
+      "trees": 254,
+      "early_stopping_ndcg": 0.446152
+    },
+    "L2_extended_random": {
+      "features": [
+        "log_price",
+        "hotel_mean_log_price",
+        "prop_starrating",
+        "prop_review_score",
+        "no_reviews",
+        "prop_brand_bool",
+        "prop_location_score1",
+        "promotion_flag",
+        "price_pct_in_search",
+        "log_price_vs_search_median",
+        "star_vs_search_mean",
+        "review_vs_search_mean",
+        "loc2_pct_in_search",
+        "prop_location_score2",
+        "prop_log_historical_price",
+        "log_price_vs_historical",
+        "comp_n_known",
+        "comp_n_expedia_cheaper",
+        "comp_n_expedia_dearer",
+        "log_n_results",
+        "srch_length_of_stay",
+        "srch_booking_window",
+        "srch_adults_count",
+        "srch_children_count",
+        "srch_room_count",
+        "srch_saturday_night_bool",
+        "orig_destination_distance",
+        "hist_log_impressions",
+        "hist_ctr",
+        "hist_booking_rate",
+        "hist_mean_position"
+      ],
+      "trees": 336,
+      "early_stopping_ndcg": 0.491714
+    },
+    "L3_extended_ranked": {
+      "features": [
+        "log_price",
+        "hotel_mean_log_price",
+        "prop_starrating",
+        "prop_review_score",
+        "no_reviews",
+        "prop_brand_bool",
+        "prop_location_score1",
+        "promotion_flag",
+        "price_pct_in_search",
+        "log_price_vs_search_median",
+        "star_vs_search_mean",
+        "review_vs_search_mean",
+        "loc2_pct_in_search",
+        "prop_location_score2",
+        "prop_log_historical_price",
+        "log_price_vs_historical",
+        "comp_n_known",
+        "comp_n_expedia_cheaper",
+        "comp_n_expedia_dearer",
+        "log_n_results",
+        "srch_length_of_stay",
+        "srch_booking_window",
+        "srch_adults_count",
+        "srch_children_count",
+        "srch_room_count",
+        "srch_saturday_night_bool",
+        "orig_destination_distance",
+        "hist_log_impressions",
+        "hist_ctr",
+        "hist_booking_rate",
+        "hist_mean_position"
+      ],
+      "trees": 477,
+      "early_stopping_ndcg": 0.546706
+    },
+    "L2p_position_aware": {
+      "features": [
+        "log_price",
+        "hotel_mean_log_price",
+        "prop_starrating",
+        "prop_review_score",
+        "no_reviews",
+        "prop_brand_bool",
+        "prop_location_score1",
+        "promotion_flag",
+        "price_pct_in_search",
+        "log_price_vs_search_median",
+        "star_vs_search_mean",
+        "review_vs_search_mean",
+        "loc2_pct_in_search",
+        "prop_location_score2",
+        "prop_log_historical_price",
+        "log_price_vs_historical",
+        "comp_n_known",
+        "comp_n_expedia_cheaper",
+        "comp_n_expedia_dearer",
+        "log_n_results",
+        "srch_length_of_stay",
+        "srch_booking_window",
+        "srch_adults_count",
+        "srch_children_count",
+        "srch_room_count",
+        "srch_saturday_night_bool",
+        "orig_destination_distance",
+        "hist_log_impressions",
+        "hist_ctr",
+        "hist_booking_rate",
+        "hist_mean_position",
+        "position"
+      ],
+      "trees": 477,
+      "early_stopping_ndcg": 0.505659
+    }
+  },
+  "lightgbm_params": {
+    "objective": "lambdarank",
+    "metric": "ndcg",
+    "ndcg_eval_at": [
+      38
+    ],
+    "label_gain": [
+      0.0,
+      1.0,
+      5.0
+    ],
+    "lambdarank_truncation_level": 38,
+    "learning_rate": 0.05,
+    "num_leaves": 63,
+    "min_data_in_leaf": 200,
+    "feature_fraction": 0.8,
+    "bagging_fraction": 0.8,
+    "bagging_freq": 1,
+    "lambda_l2": 1.0,
+    "verbosity": -1
+  },
+  "ndcg": {
+    "B1_reviews_first": {
+      "ndcg": 0.346829,
+      "ndcg_lo": 0.34452,
+      "ndcg_hi": 0.349166,
+      "ndcg_raw": 0.386519,
+      "agreement_with_shown_order": 0.041158,
+      "booked_in_top5": 0.280672
+    },
+    "B2_cheapest_first": {
+      "ndcg": 0.362464,
+      "ndcg_lo": 0.359622,
+      "ndcg_hi": 0.365353,
+      "ndcg_raw": 0.377698,
+      "agreement_with_shown_order": -0.03637,
+      "booked_in_top5": 0.303513
+    },
+    "M1_most_likely_booked": {
+      "ndcg": 0.404729,
+      "ndcg_lo": 0.401423,
+      "ndcg_hi": 0.407527,
+      "ndcg_raw": 0.420387,
+      "agreement_with_shown_order": 0.063823,
+      "booked_in_top5": 0.450373
+    },
+    "M2_highest_expected_value": {
+      "ndcg": 0.373238,
+      "ndcg_lo": 0.370399,
+      "ndcg_hi": 0.375808,
+      "ndcg_raw": 0.390256,
+      "agreement_with_shown_order": 0.090016,
+      "booked_in_top5": 0.330418
+    },
+    "blend_lambda_0.3": {
+      "ndcg": 0.402171,
+      "ndcg_lo": 0.398879,
+      "ndcg_hi": 0.404949,
+      "ndcg_raw": 0.417874,
+      "agreement_with_shown_order": 0.079354,
+      "booked_in_top5": 0.429364
+    },
+    "L1_core_random": {
+      "ndcg": 0.425682,
+      "ndcg_lo": 0.42214,
+      "ndcg_hi": 0.428958,
+      "ndcg_raw": 0.440533,
+      "agreement_with_shown_order": 0.073985,
+      "booked_in_top5": 0.472421
+    },
+    "L2_extended_random": {
+      "ndcg": 0.455783,
+      "ndcg_lo": 0.452254,
+      "ndcg_hi": 0.459346,
+      "ndcg_raw": 0.486655,
+      "agreement_with_shown_order": 0.194834,
+      "booked_in_top5": 0.57586
+    },
+    "L3_extended_ranked": {
+      "ndcg": 0.454591,
+      "ndcg_lo": 0.450923,
+      "ndcg_hi": 0.458012,
+      "ndcg_raw": 0.485941,
+      "agreement_with_shown_order": 0.188126,
+      "booked_in_top5": 0.577655
+    },
+    "L2p_position_aware": {
+      "ndcg": 0.45087,
+      "ndcg_lo": 0.447365,
+      "ndcg_hi": 0.454445,
+      "ndcg_raw": 0.478081,
+      "agreement_with_shown_order": 0.119984,
+      "booked_in_top5": 0.566739
+    }
+  },
+  "ndcg_checks": {
+    "order actually shown": {
+      "raw": 0.443589,
+      "adjusted": 0.34583
+    },
+    "random shuffle": {
+      "raw": 0.358121,
+      "adjusted": 0.343121
+    }
+  },
+  "examination_by_slot": {
+    "1": 1.0,
+    "2": 0.754784,
+    "3": 0.641699,
+    "4": 0.555666,
+    "5": 0.555666,
+    "6": 0.500586,
+    "7": 0.452443,
+    "8": 0.407823,
+    "9": 0.397486,
+    "10": 0.370362,
+    "11": 0.370362,
+    "12": 0.345434,
+    "13": 0.329574,
+    "14": 0.310487,
+    "15": 0.297123,
+    "16": 0.297213,
+    "17": 0.297213,
+    "18": 0.27134,
+    "19": 0.268612,
+    "20": 0.270293,
+    "21": 0.251129,
+    "22": 0.239029,
+    "23": 0.239029,
+    "24": 0.23485,
+    "25": 0.21348,
+    "26": 0.220918,
+    "27": 0.213762,
+    "28": 0.208288,
+    "29": 0.198468,
+    "30": 0.205591,
+    "31": 0.20423,
+    "32": 0.198122,
+    "33": 0.20614,
+    "34": 0.194311,
+    "35": 0.186198,
+    "36": 0.178344,
+    "37": 0.17345,
+    "38": 0.119105
+  },
+  "paired": {
+    "L1_core_random - M1_most_likely_booked": {
+      "question": "algorithm: L1 vs choice model, same 8 attributes",
+      "ndcg_diff": 0.020952,
+      "ci": [
+        0.017929,
+        0.023781
+      ],
+      "raw_ndcg_diff": 0.020146
+    },
+    "L2_extended_random - L1_core_random": {
+      "question": "features: L2 vs L1",
+      "ndcg_diff": 0.030101,
+      "ci": [
+        0.026925,
+        0.033242
+      ],
+      "raw_ndcg_diff": 0.046122
+    },
+    "L3_extended_ranked - L2_extended_random": {
+      "question": "training data: ranked logs (L3) vs random (L2)",
+      "ndcg_diff": -0.001192,
+      "ci": [
+        -0.003289,
+        0.000933
+      ],
+      "raw_ndcg_diff": -0.000714
+    },
+    "L2p_position_aware - L2_extended_random": {
+      "question": "position-aware training (L2p) vs L2",
+      "ndcg_diff": -0.004913,
+      "ci": [
+        -0.006686,
+        -0.003018
+      ],
+      "raw_ndcg_diff": -0.008573
+    },
+    "L2_extended_random - blend_lambda_0.3": {
+      "question": "L2 vs the phase 5 test arm (blend)",
+      "ndcg_diff": 0.053613,
+      "ci": [
+        0.050039,
+        0.057403
+      ],
+      "raw_ndcg_diff": 0.068781
+    },
+    "M1_most_likely_booked - B1_reviews_first": {
+      "question": "choice model vs reviews first (reference)",
+      "ndcg_diff": 0.0579,
+      "ci": [
+        0.05428,
+        0.061343
+      ],
+      "raw_ndcg_diff": 0.033868
+    }
+  },
+  "booking_model_evaluator": {
+    "B1_reviews_first": {
+      "bookings_per_search": 0.13838,
+      "value_per_search_usd": 46.789053,
+      "no_review_booking_share": 0.013128,
+      "booked_nightly_price_usd": 150.577931
+    },
+    "B2_cheapest_first": {
+      "bookings_per_search": 0.136916,
+      "value_per_search_usd": 35.435551,
+      "no_review_booking_share": 0.028078,
+      "booked_nightly_price_usd": 115.591342
+    },
+    "M1_most_likely_booked": {
+      "bookings_per_search": 0.152568,
+      "value_per_search_usd": 44.414865,
+      "no_review_booking_share": 0.012564,
+      "booked_nightly_price_usd": 129.395243
+    },
+    "M2_highest_expected_value": {
+      "bookings_per_search": 0.142324,
+      "value_per_search_usd": 50.406254,
+      "no_review_booking_share": 0.013279,
+      "booked_nightly_price_usd": 157.003851
+    },
+    "blend_lambda_0.3": {
+      "bookings_per_search": 0.151366,
+      "value_per_search_usd": 47.043322,
+      "no_review_booking_share": 0.012336,
+      "booked_nightly_price_usd": 137.861159
+    },
+    "L1_core_random": {
+      "bookings_per_search": 0.146992,
+      "value_per_search_usd": 43.55531,
+      "no_review_booking_share": 0.017137,
+      "booked_nightly_price_usd": 132.48371
+    },
+    "L2_extended_random": {
+      "bookings_per_search": 0.143316,
+      "value_per_search_usd": 42.764604,
+      "no_review_booking_share": 0.018678,
+      "booked_nightly_price_usd": 132.492818
+    },
+    "L3_extended_ranked": {
+      "bookings_per_search": 0.144148,
+      "value_per_search_usd": 42.699878,
+      "no_review_booking_share": 0.017895,
+      "booked_nightly_price_usd": 131.60936
+    },
+    "L2p_position_aware": {
+      "bookings_per_search": 0.143506,
+      "value_per_search_usd": 41.972269,
+      "no_review_booking_share": 0.020033,
+      "booked_nightly_price_usd": 130.024153
+    }
+  },
+  "l2_importance_top12": {
+    "prop_location_score2": 0.156302,
+    "loc2_pct_in_search": 0.082916,
+    "log_price_vs_historical": 0.071628,
+    "hist_ctr": 0.070024,
+    "hotel_mean_log_price": 0.059912,
+    "star_vs_search_mean": 0.055979,
+    "prop_location_score1": 0.053985,
+    "price_pct_in_search": 0.052975,
+    "log_price_vs_search_median": 0.044476,
+    "log_price": 0.043655,
+    "hist_mean_position": 0.037407,
+    "hist_log_impressions": 0.036778
+  },
+  "l2_importance_groups": {
+    "the choice model's 8": 0.189902,
+    "hotel history in ranked traffic": 0.178591,
+    "everything else": 0.631507
+  }
+}

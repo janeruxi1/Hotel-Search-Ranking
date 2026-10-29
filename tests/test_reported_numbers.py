@@ -63,3 +63,35 @@ def test_readme_numbers_match_records():
     _, shared = _expected()
     missing = sorted(s for s in shared if s not in README.replace("−", "-"))
     assert not missing, f"README.md does not quote: {missing}"
+
+
+def _expected_ltr():
+    p6 = read_metrics("06_learning_to_rank")
+    nd, pr, g, ck = p6["ndcg"], p6["paired"], p6["booking_model_evaluator"], p6["ndcg_checks"]
+
+    def dd(k):
+        v = pr[k]
+        return f"{v['ndcg_diff']:+.3f} [{v['ci'][0]:+.3f}, {v['ci'][1]:+.3f}]"
+
+    shared = {dd("L2_extended_random - blend_lambda_0.3"),
+              f"{nd['L2_extended_random']['booked_in_top5']:.0%}", f"{nd['blend_lambda_0.3']['booked_in_top5']:.0%}",
+              f"{g['L2_extended_random']['bookings_per_search'] * 100:.2f}",
+              f"{g['blend_lambda_0.3']['bookings_per_search'] * 100:.2f}",
+              f"{g['L2_extended_random']['no_review_booking_share']:.2%}",
+              f"{g['B1_reviews_first']['no_review_booking_share']:.2%}"}
+    readme = {f"{nd[k]['ndcg']:.3f}" for k in ("B1_reviews_first", "M1_most_likely_booked", "blend_lambda_0.3",
+                                              "L1_core_random", "L2_extended_random", "L3_extended_ranked")}
+    readme |= {dd(k) for k in ("L1_core_random - M1_most_likely_booked", "L2_extended_random - L1_core_random",
+                               "L3_extended_ranked - L2_extended_random")}
+    readme |= {f"{ck['order actually shown']['raw']:.3f}", f"{ck['order actually shown']['adjusted']:.3f}",
+               f"{ck['random shuffle']['adjusted']:.3f}",
+               f"{pr['L2_extended_random - L1_core_random']['raw_ndcg_diff']:+.3f}"}
+    return shared, shared - {dd("L2_extended_random - blend_lambda_0.3")} | readme
+
+
+def test_learning_to_rank_numbers_match_record():
+    memo, readme = _expected_ltr()
+    missing_memo = sorted(s for s in memo if s not in MEMO.replace("−", "-"))
+    missing_readme = sorted(s for s in readme if s not in README.replace("−", "-"))
+    assert not missing_memo, f"decision_memo.md does not quote: {missing_memo}"
+    assert not missing_readme, f"README.md does not quote: {missing_readme}"

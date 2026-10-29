@@ -80,12 +80,25 @@ candidates (+9.4% offline), discounted to +3.5% because of the inconclusive mech
 - Stop early only for a guardrail breach or a sample-ratio mismatch (checked daily); no early
   stopping for a win.
 
+## Added after this memo: a learned ranker
+
+Notebook 06 (exploratory, outside the decision rule) trained LightGBM LambdaMART rankers on the
+same searches. On what users chose, the best of them (L2, 31 features) beats the test blend by
++0.054 [+0.050, +0.057] position-adjusted NDCG and puts the booked hotel in its
+top 5 for 58% of bookings against 43%. The booking model behind this memo rates it lower
+(14.33 against 15.14 bookings per 100 searches) and above the no-review guardrail
+(1.87% against 1.31%). The two measures answer different questions, so the
+recommendation above stands; adding L2 as a fourth arm is the decision below.
+
 ## Decisions needed
 
 1. **Guardrail margin.** At 2% the test needs about 1.85 million clicked searches; at 5% it needs
    about 0.34 million (114,487 per arm), and the booking comparison sets the size instead.
 2. **Traffic share.** At 100,000 clicked searches a day entering the test, the 2% version takes
    19 days.
+3. **A fourth arm.** Whether to add the learned ranker (L2). It would need its own comparison in
+   the test, so notebook 05 would have to re-size it, and the no-review guardrail would be
+   watched closely.
 
 ## Limitations
 
@@ -102,5 +115,5 @@ candidates (+9.4% offline), discounted to +3.5% because of the inconclusive mech
 - Expedia's current ranking cannot be scored offline, so how much either candidate beats it is
   unknown until the test runs.
 
-*Analysis: notebooks 01–05 in this repository; the key numbers above are checked against
+*Analysis: notebooks 01–06 in this repository; the key numbers above are checked against
 `reports/metrics/` in CI.*

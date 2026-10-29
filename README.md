@@ -22,7 +22,8 @@ redistributed here; see [`data/raw/README.md`](data/raw/README.md).
 **What the project shows:** separating a causal effect from selection using randomized traffic
 already in the logs; a discrete choice model that prices position, promotions and quality in
 dollars; offline evaluation of ranking policies against a decision rule written before the
-results; and the A/B test that would settle what offline analysis cannot.
+results; a LightGBM LambdaMART ranker judged with a position-bias correction; and the A/B test
+that would settle what offline analysis cannot.
 
 ## Recommendation
 
@@ -72,6 +73,43 @@ was committed before this analysis ([`reports/decision_rule.md`](reports/decisio
   Offline evaluation can choose what to test; only an A/B test can say how much it is worth.
 
 ![Policy evaluation](reports/figures/04_policy_evaluation.png)
+
+## A learned ranker (LambdaMART), added after the memo
+
+Search teams usually rank with gradient-boosted trees trained with LambdaMART rather than a choice
+model, so [notebook 06](notebooks/06_learning_to_rank.py) asks whether one would change the answer.
+It is exploratory: the decision rule did not include learned rankers. Each ranker is trained on the
+same 80% of random-order searches and judged on the same 23,165 held-out ones, by NDCG@38 (the
+competition metric: 5 for the booked hotel, 1 for a click) on what users actually chose.
+
+| Ranking | NDCG@38, position-adjusted | Booked hotel in its top 5 |
+|---|---|---|
+| Reviews first | 0.347 | 28% |
+| Choice model, most likely booked | 0.405 | 45% |
+| Choice-model blend (the test arm) | 0.402 | 43% |
+| L1 · LambdaMART, the same 8 attributes | 0.426 | 47% |
+| L2 · LambdaMART, 31 features | 0.456 | 58% |
+| L3 · L2 trained on Expedia-ordered logs | 0.455 | 58% |
+
+- **The yardstick needed fixing first.** The random arm is slightly tilted (better hotels a little
+  higher, as the audit found), so a ranking that shares the tilt gets credit for clicks the slot
+  produced. The order actually shown scored 0.444 raw. Each search is
+  now weighted by how likely its chosen hotel's slot was to be looked at, which brings the shown
+  order down to 0.346, level with a random shuffle (0.343).
+- **Algorithm:** with the same eight attributes, LambdaMART beats the choice model by
+  +0.021 [+0.018, +0.024] NDCG.
+- **Features matter more:** the other 23 add +0.030 [+0.027, +0.033]. Unadjusted
+  NDCG said +0.046, because several of them share the tilt.
+- **Biased training logs barely mattered here:** L3 is -0.001 [-0.003, +0.001],
+  and a position-aware ranker did no better. Position bias distorts what a slot is worth (the
+  position section below), much more than which hotel is better.
+- **The booking model disagrees.** It rates L2 at 14.33 bookings per 100 searches
+  against 15.14 for the blend, and puts 1.87% of L2's bookings at hotels
+  with no reviews, above the 1.31% the guardrail allows. It sees only eight attributes;
+  NDCG sees which hotel is chosen but not whether anyone books at all. Only the A/B test can
+  settle it, so L2 is a candidate fourth arm, not a replacement.
+
+![Learning to rank](reports/figures/06_learning_to_rank.png)
 
 ## Position effects: naive versus randomized
 
@@ -174,6 +212,7 @@ python notebooks/02_position_effects.py
 python notebooks/03_choice_model.py
 python notebooks/04_policy_evaluation.py
 python notebooks/05_ab_test_design.py
+python notebooks/06_learning_to_rank.py   # LightGBM; about 5 minutes
 pytest
 ```
 
@@ -198,7 +237,7 @@ reports/decision_rule.md     the rule, committed before phase 4 ran
 reports/metrics/*.json       every result, written by the notebooks (aggregates only)
 notebooks/0N_*.py / .ipynb   one notebook per phase; .py is the source, .ipynb is executed on real data
 sql/                         DuckDB SQL for the search-level audit and the analysis sample (used by notebook 01)
-src/hotelrank/               audit, position effects, choice model, policy evaluation, test sizing, demo helpers
+src/hotelrank/               audit, position effects, choice model, policy evaluation, learning to rank, test sizing, demo helpers
 app/streamlit_app.py         the live demo; reads only reports/metrics
 tests/                       unit tests, notebook sync, demo smoke tests, memo/README numbers against records
 ```
