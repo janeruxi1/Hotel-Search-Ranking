@@ -96,9 +96,11 @@ recommendation above stands; adding L2 as a fourth arm is the decision below.
    about 0.34 million (114,487 per arm), and the booking comparison sets the size instead.
 2. **Traffic share.** At 100,000 clicked searches a day entering the test, the 2% version takes
    19 days.
-3. **A fourth arm.** Whether to add the learned ranker (L2). It would need its own comparison in
-   the test, so notebook 05 would have to re-size it, and the no-review guardrail would be
-   watched closely.
+3. **A fourth arm.** Whether to add the learned ranker (L2). With all six pairwise comparisons the
+   per-arm size stays 616,042, because the value guardrail still sets it, so the cost is
+   the extra arm: 2,464,168 clicked searches in total instead of 1,848,126, or
+   25 days instead of 19 at 100,000 a day. The no-review guardrail would be
+   watched closely for that arm.
 
 ## Limitations
 

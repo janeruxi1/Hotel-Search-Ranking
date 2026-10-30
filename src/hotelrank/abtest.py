@@ -79,3 +79,24 @@ def simulate_power(p0: float, rel_lift: float, n: int, alpha: float = 0.05, n_si
     se = np.sqrt(2 * pooled * (1 - pooled) / n)
     z = (x1 - x0) / n / se
     return float(np.mean(np.abs(z) > _z(1 - alpha / 2)))
+
+
+def size_design(p0: float, rel_lift: float, value_mean: float, value_sd: float, n_arms: int,
+                n_comparisons: int, margin: float = 0.02, power: float = 0.8, family_alpha: float = 0.05,
+                guardrail_alpha: float = 0.025) -> dict:
+    """Per-arm and total size of an equal-allocation test, as in phase 5.
+
+    Bookings: each of ``n_comparisons`` pairwise comparisons gets two-sided alpha
+    family_alpha / n_comparisons (Bonferroni; the analysis uses Holm, which is never less
+    powerful). Value guardrail: one-sided non-inferiority at ``guardrail_alpha`` with no further
+    adjustment, because an arm ships only if it passes both (an intersection-union test).
+    The arm size is the larger of the two requirements.
+    """
+    alpha = family_alpha / n_comparisons
+    n_book = n_two_proportions(p0, rel_lift, alpha, power)
+    n_guard = n_noninferiority_mean(value_mean, value_sd, margin, guardrail_alpha, power)
+    n_arm = max(n_book, n_guard)
+    return {"arms": n_arms, "comparisons": n_comparisons, "alpha_per_comparison": alpha,
+            "n_booking": n_book, "n_guardrail": n_guard, "n_per_arm": n_arm, "n_total": n_arms * n_arm,
+            "binding": "guardrail" if n_guard >= n_book else "booking",
+            "mde_at_n_per_arm": mde_two_proportions(p0, n_arm, alpha, power)}

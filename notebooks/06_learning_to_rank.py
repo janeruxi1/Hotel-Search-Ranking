@@ -52,9 +52,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
-from hotelrank import audit, choice, ltr, policy, position
+from hotelrank import abtest, audit, choice, ltr, policy, position
 from hotelrank.data import FIGURES_DIR, ROOT as PROJECT_ROOT, load
-from hotelrank.records import show_verdict, write_metrics
+from hotelrank.records import read_metrics, show_verdict, write_metrics
 
 N_BOOT = int(os.environ.get("HOTELRANK_N_BOOT", 1000))
 COLUMNS = ["srch_id", "position", "random_bool", "click_bool", "booking_bool", "price_usd", "prop_starrating",
@@ -265,7 +265,38 @@ print({g: round(v, 3) for g, v in group_share.items()})
 importance.head(12).round(4)
 
 # %% [markdown]
-# ## 6. Figure
+# ## 6. What a fourth arm would cost
+#
+# If L2 joins the phase 5 test, the test changes in two ways. The per-arm size can grow, because
+# more comparisons share the 5% family-wise error. And there is one more arm to fill. The sizing
+# below reuses phase 5's inputs and rules: the same baseline, the same discounted lift as the
+# smallest effect worth detecting, power 80%, Bonferroni-sized comparisons (Holm in the analysis),
+# and the 2% value guardrail with value capped at the 99th percentile. Three designs:
+#
+# * **phase 5 as planned:** control, reviews first, blend; 3 pairwise comparisons;
+# * **add L2:** control, reviews first, blend, L2; all 6 pairwise comparisons;
+# * **swap the blend for L2:** control, reviews first, L2; 3 comparisons.
+#
+# The no-review-hotel share joins the guardrails for any L2 arm, since the booking model puts L2
+# above reviews first on it (section 4).
+
+# %%
+p05 = read_metrics("05_ab_test_design")
+inp = p05["inputs"]
+cap = inp["value_capped_p99"]
+min_lift = p05["lifts"]["T2 blend vs T1 reviews first"]["discounted"]
+DESIGNS = {"phase 5 as planned (3 arms)": (3, 3), "add L2 (4 arms, all pairs)": (4, 6),
+           "swap the blend for L2 (3 arms)": (3, 3)}
+sizing = {name: abtest.size_design(inp["baseline_booking_rate"], min_lift, cap["mean"], cap["sd"], arms, comps)
+          for name, (arms, comps) in DESIGNS.items()}
+DAILY = 100_000
+for s in sizing.values():
+    s["days_at_100k_per_day"] = max(int(np.ceil(s["n_total"] / DAILY)), 14)
+assert sizing["phase 5 as planned (3 arms)"]["n_total"] == p05["n_total"]  # reproduces phase 5 exactly
+pd.DataFrame(sizing).T
+
+# %% [markdown]
+# ## 7. Figure
 
 # %%
 order = list(ndcg_table.sort_values("ndcg").index)
@@ -314,6 +345,9 @@ record = {
     "booking_model_evaluator": {k: {c: r6(v) for c, v in row.items()} for k, row in evaluator.iterrows()},
     "l2_importance_top12": {k: r6(v) for k, v in importance.head(12).items()},
     "l2_importance_groups": {k: r6(v) for k, v in group_share.items()},
+    "fourth_arm_sizing": {"min_detectable_lift": r6(min_lift), "searches_per_day_assumed": DAILY,
+                          "designs": {k: {c: (r6(v) if isinstance(v, float) else v) for c, v in s.items()}
+                                      for k, s in sizing.items()}},
 }
 out_path = write_metrics("06_learning_to_rank", record, SOURCE)
 print("wrote", out_path.relative_to(PROJECT_ROOT) if SOURCE == "real" else out_path.name)
@@ -364,9 +398,16 @@ verdict = [
         else ", within the metric framework's guardrail. ")
      + "That model sees only eight attributes, and NDCG measures which hotel is chosen, not whether a booking happens "
        "at all, so neither settles it."),
-    "Recommendation: the learned ranker is the strongest candidate for which hotel users want, and the case for adding it "
-    "to the A/B test as a further arm, with the no-review guardrail watched. A fourth arm needs a larger test; "
-    "notebook 05 would have to re-size it. It does not replace the pre-declared arm.",
+    (lambda base, four: f"A fourth arm costs: {four['n_per_arm']:,} clicked searches per arm and {four['n_total']:,} in total, "
+     f"against {base['n_total']:,} as planned (+{four['n_total'] / base['n_total'] - 1:.0%}), or "
+     f"{four['days_at_100k_per_day']} days instead of {base['days_at_100k_per_day']} at 100,000 a day. The per-arm size "
+     + ("does not change: the value guardrail, not the booking comparisons, still sets it, so the extra cost is the "
+        "extra arm." if four["n_per_arm"] == base["n_per_arm"] else "grows because six comparisons share the error rate.")
+     )(record["fourth_arm_sizing"]["designs"]["phase 5 as planned (3 arms)"],
+       record["fourth_arm_sizing"]["designs"]["add L2 (4 arms, all pairs)"]),
+    "Recommendation: L2 is the strongest candidate for which hotel users want. Add it as a fourth arm, with the "
+    "no-review guardrail watched, rather than swapping it for the blend (same cost as planned, but it would drop the "
+    "arm the booking model rates best). It does not replace the pre-declared arm.",
 ]
 show_verdict("Phase 6 verdict: learning to rank (exploratory)", verdict,
-             "Decide whether the learned ranker joins the A/B test as a fourth arm, and if so re-size the test in notebook 05.")
+             "The memo's decision 3: whether to pay for a fourth arm.")

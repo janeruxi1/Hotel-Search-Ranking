@@ -107,7 +107,9 @@ competition metric: 5 for the booked hotel, 1 for a click) on what users actuall
   against 15.14 for the blend, and puts 1.87% of L2's bookings at hotels
   with no reviews, above the 1.31% the guardrail allows. It sees only eight attributes;
   NDCG sees which hotel is chosen but not whether anyone books at all. Only the A/B test can
-  settle it, so L2 is a candidate fourth arm, not a replacement.
+  settle it, so L2 is a candidate fourth arm, not a replacement. Adding it costs one more arm
+  and nothing per arm, since the value guardrail still sets the size: 2,464,168 clicked
+  searches instead of 1,848,126, 25 days instead of 19 at 100,000 a day.
 
 ![Learning to rank](reports/figures/06_learning_to_rank.png)
 

@@ -86,6 +86,10 @@ def _expected_ltr():
     readme |= {f"{ck['order actually shown']['raw']:.3f}", f"{ck['order actually shown']['adjusted']:.3f}",
                f"{ck['random shuffle']['adjusted']:.3f}",
                f"{pr['L2_extended_random - L1_core_random']['raw_ndcg_diff']:+.3f}"}
+    fa = p6["fourth_arm_sizing"]["designs"]
+    base, four = fa["phase 5 as planned (3 arms)"], fa["add L2 (4 arms, all pairs)"]
+    shared |= {f"{four['n_total']:,}", f"{base['n_total']:,}", f"{four['days_at_100k_per_day']} days instead of "
+               f"{base['days_at_100k_per_day']}"}
     return shared, shared - {dd("L2_extended_random - blend_lambda_0.3")} | readme
 
 

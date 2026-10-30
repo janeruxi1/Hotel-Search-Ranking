@@ -32,3 +32,18 @@ def test_capping_lowers_variance():
     v = np.where(rng.random(20000) < 0.13, rng.lognormal(5.5, 1.0, 20000), 0.0)
     raw, capped = abtest.per_search_value_stats(v), abtest.per_search_value_stats(v, 0.99)
     assert capped["sd"] < raw["sd"] and capped["cap"] > 0
+
+
+def test_size_design_reproduces_phase_5_and_scales_with_arms():
+    from hotelrank.records import read_metrics
+
+    p5 = read_metrics("05_ab_test_design")
+    inp, lift = p5["inputs"], p5["lifts"]["T2 blend vs T1 reviews first"]["discounted"]
+    cap = inp["value_capped_p99"]
+    three = abtest.size_design(inp["baseline_booking_rate"], lift, cap["mean"], cap["sd"], 3, 3)
+    assert three["n_booking"] == p5["n_primary"] and three["n_guardrail"] == p5["n_guardrail"]
+    assert three["n_total"] == p5["n_total"]
+    four = abtest.size_design(inp["baseline_booking_rate"], lift, cap["mean"], cap["sd"], 4, 6)
+    assert four["n_booking"] > three["n_booking"]                    # stricter alpha per comparison
+    assert four["n_guardrail"] == three["n_guardrail"]                # guardrail needs no adjustment
+    assert four["n_total"] == 4 * four["n_per_arm"]

@@ -412,5 +412,47 @@
     "the choice model's 8": 0.189902,
     "hotel history in ranked traffic": 0.178591,
     "everything else": 0.631507
+  },
+  "fourth_arm_sizing": {
+    "min_detectable_lift": 0.034844,
+    "searches_per_day_assumed": 100000,
+    "designs": {
+      "phase 5 as planned (3 arms)": {
+        "arms": 3,
+        "comparisons": 3,
+        "alpha_per_comparison": 0.016667,
+        "n_booking": 114487,
+        "n_guardrail": 616042,
+        "n_per_arm": 616042,
+        "n_total": 1848126,
+        "binding": "guardrail",
+        "mde_at_n_per_arm": 0.014959,
+        "days_at_100k_per_day": 19
+      },
+      "add L2 (4 arms, all pairs)": {
+        "arms": 4,
+        "comparisons": 6,
+        "alpha_per_comparison": 0.008333,
+        "n_booking": 132427,
+        "n_guardrail": 616042,
+        "n_per_arm": 616042,
+        "n_total": 2464168,
+        "binding": "guardrail",
+        "mde_at_n_per_arm": 0.016092,
+        "days_at_100k_per_day": 25
+      },
+      "swap the blend for L2 (3 arms)": {
+        "arms": 3,
+        "comparisons": 3,
+        "alpha_per_comparison": 0.016667,
+        "n_booking": 114487,
+        "n_guardrail": 616042,
+        "n_per_arm": 616042,
+        "n_total": 1848126,
+        "binding": "guardrail",
+        "mde_at_n_per_arm": 0.014959,
+        "days_at_100k_per_day": 19
+      }
+    }
   }
 }
