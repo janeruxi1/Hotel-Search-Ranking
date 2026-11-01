@@ -255,6 +255,6 @@ The demo needs no data download: it reads the aggregate records in `reports/metr
 
 ## Related projects
 
-- [StreamFlix A/B Testing](https://github.com/janeruxi1/StreamFlix-AB-Testing)
-- [StreamFlix Churn & Retention](https://github.com/janeruxi1/StreamFlix-Churn-Retention)
+- [A/B testing on real experiments](https://github.com/janeruxi1/ab-testing-real-experiments)
+- [Churn and retention on real data](https://github.com/janeruxi1/churn-uplift-decisioning)
 - [StreamFlix RAG Evaluation](https://github.com/janeruxi1/StreamFlix-RAG-evaluation)
