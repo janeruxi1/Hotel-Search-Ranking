@@ -18,6 +18,14 @@
 # coefficient is an observational estimate; section 3 is about making it as clean as the data
 # allows.
 
+
+# %% [markdown]
+# | | |
+# |---|---|
+# | **Question** | What drives which hotel a searcher picks (price, position, promotions, stars, reviews), and what is each worth in dollars? |
+# | **Answer** | At the median price of $129, moving a hotel from position 10 to 1 is worth the same as a $56 price cut for clicks ($40 for bookings); a promotion flag is worth about $19 to $21. Comparing different hotels understates price sensitivity by more than half, so the model compares each hotel with itself at different prices. |
+# | **Next** | [Notebook 04](04_policy_evaluation.ipynb) uses a booking version of this model to compare rankings. |
+
 # %%
 import sys
 from pathlib import Path
@@ -232,6 +240,10 @@ out_path = write_metrics("03_choice_model", record, SOURCE)
 print("wrote", out_path.relative_to(PROJECT_ROOT) if SOURCE == "real" else out_path.name)
 if SOURCE == "real":
     fig.savefig(FIGURES_DIR / "03_choice_model.png", dpi=150, bbox_inches="tight")
+
+
+# %% [markdown]
+# **How to read the figure.** Left: for each starting position, the price cut that would have the same effect as moving the hotel to position 1, for clicks and bookings, with 95% intervals; the further down the page, the bigger the equivalent discount. Right: on searches the model never saw, the predicted chance of being chosen (grouped into tenths) against how often hotels were actually chosen; points on the diagonal mean the probabilities can be trusted.
 
 # %% [markdown]
 # ## Verdict

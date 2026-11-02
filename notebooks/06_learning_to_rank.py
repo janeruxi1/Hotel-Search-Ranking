@@ -27,6 +27,14 @@
 # prototype of this comparison was run before the notebook was written, so nothing here replaces
 # the rule's answer; it informs which arms are worth an online test.
 
+
+# %% [markdown]
+# | | |
+# |---|---|
+# | **Question** | Would a learned ranker (LambdaMART, the industry standard) have changed the answer, and where would any gain come from: the algorithm, the features, or the training data? |
+# | **Answer** | A LambdaMART ranker with 31 features puts the hotels users chose nearer the top than any earlier ranking, and both the algorithm and the extra features help, each with an interval clear of zero. Training on Expedia's position-biased logs did not help. This notebook is exploratory: it informs a possible fourth test arm, not the decision. |
+# | **Next** | Back to the [README](../README.md) or the [decision memo](../reports/decision_memo.md). |
+
 # %%
 import os
 import sys
@@ -353,6 +361,10 @@ out_path = write_metrics("06_learning_to_rank", record, SOURCE)
 print("wrote", out_path.relative_to(PROJECT_ROOT) if SOURCE == "real" else out_path.name)
 if SOURCE == "real":
     fig.savefig(FIGURES_DIR / "06_learning_to_rank.png", dpi=150, bbox_inches="tight")
+
+
+# %% [markdown]
+# **How to read the figure.** Left: each ranking's score at putting the hotels users actually chose near the top (position-adjusted NDCG, higher is better), with 95% intervals. Right: which features the best learned ranker (L2) relies on most, as a share of its total split gain; colour shows whether a feature is one of the choice model's eight, the hotel's history in ranked traffic, or something else.
 
 # %% [markdown]
 # ## Verdict

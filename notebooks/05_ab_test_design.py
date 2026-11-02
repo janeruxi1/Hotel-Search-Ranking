@@ -16,6 +16,14 @@
 # Cheapest first, the original proposal, is not tested: offline it lost to reviews first on both
 # bookings and booking value.
 
+
+# %% [markdown]
+# | | |
+# |---|---|
+# | **Question** | How big, and how long, does the A/B test of the new rankings need to be? |
+# | **Answer** | Three arms (current ranking, reviews first, and the exploratory blend), 616,042 clicked searches per arm, about 1.85 million in total. Bookings alone would need far fewer; the guardrail that booking value must not drop by more than 2% sets the size. Relaxing that guardrail to 5% would cut it to about 99,000 per arm, which is a call for the business. |
+# | **Next** | The [decision memo](../reports/decision_memo.md) turns notebooks 01 to 05 into a recommendation; [notebook 06](06_learning_to_rank.ipynb) is an exploratory comparison with learning to rank. |
+
 # %%
 import sys
 from pathlib import Path
@@ -221,6 +229,10 @@ out_path = write_metrics("05_ab_test_design", record, SOURCE)
 print("wrote", out_path.relative_to(PROJECT_ROOT) if SOURCE == "real" else out_path.name)
 if SOURCE == "real":
     fig.savefig(FIGURES_DIR / "05_ab_test_power.png", dpi=150, bbox_inches="tight")
+
+
+# %% [markdown]
+# **How to read the figure.** Each curve is the chance the test detects a given booking lift, as the number of searches per arm grows (log scale). The dotted line is the 80% power target; the dashed line is the size the value guardrail needs. Where a curve crosses the dotted line is the size that lift needs on its own.
 
 # %% [markdown]
 # ## Verdict

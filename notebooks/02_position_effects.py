@@ -10,6 +10,14 @@
 # price), reserved slots 5, 11, 17 and 23 excluded. Intervals: search-level bootstrap for the
 # raw curves, search-clustered standard errors for the regressions.
 
+
+# %% [markdown]
+# | | |
+# |---|---|
+# | **Question** | How much does a hotel's position on the page cause clicks and bookings? |
+# | **Answer** | Much less than it looks. In Expedia's own order, position 1 gets 16.8 times the clicks of position 30; in randomly ordered searches it is 4.9 times. The naive reading overstates the effect of position about 3.4 times, because the ranking puts better hotels on top. |
+# | **Next** | [Notebook 03](03_choice_model.ipynb) asks what else drives the choice, in dollars. |
+
 # %%
 import sys
 from pathlib import Path
@@ -189,6 +197,10 @@ out_path = write_metrics("02_position_effects", record, SOURCE)
 print("wrote", out_path.relative_to(PROJECT_ROOT) if SOURCE == "real" else out_path.name)
 if SOURCE == "real":
     fig.savefig(FIGURES_DIR / "02_position_effects.png", dpi=150, bbox_inches="tight")
+
+
+# %% [markdown]
+# **How to read the figure.** Each line is the click rate (left) or booking rate (right) at each position, divided by the rate at position 1, on a log scale. The steep line is Expedia's order, where position and hotel quality are mixed together. The flatter lines are random order (raw and adjusted for hotel attributes): that is the effect of the slot alone. The gap between them is the bias a naive analysis would report.
 
 # %% [markdown]
 # ## Verdict

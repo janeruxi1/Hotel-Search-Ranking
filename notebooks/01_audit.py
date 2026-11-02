@@ -15,6 +15,14 @@
 # Without the real data (CI, or anyone who has not downloaded it) the notebook runs on the
 # synthetic table from `hotelrank.synthetic` and writes nothing to `reports/`.
 
+
+# %% [markdown]
+# | | |
+# |---|---|
+# | **Question** | Does Expedia's search data match its description, and where are the traps before any analysis? |
+# | **Answer** | It matches (9.9 million impressions in 399,344 searches), with three traps handled: four reserved slots that are almost never filled, users who re-sorted by price, and a "random" arm that is close to random but not perfectly so. The full list is in the Verdict at the end. |
+# | **Next** | [Notebook 02](02_position_effects.ipynb) measures how much position itself drives clicks. |
+
 # %%
 import sys
 from pathlib import Path
@@ -113,6 +121,10 @@ ax.set(xlabel="position", ylabel="impressions, relative to position 1",
 ax.legend(frameon=False)
 fig.tight_layout()
 
+
+# %% [markdown]
+# **How to read the figure.** For each position on the page, how many hotels were shown there compared with position 1, in Expedia's order and in random order. The dips at 5, 11, 17 and 23 (dotted lines) are slots almost never filled: they are reserved, so they are left out of every later analysis.
+
 # %% [markdown]
 # ## 3. Prices
 #
@@ -185,6 +197,10 @@ ax2.set(xlabel="position", ylabel="stars minus search average",
         title="Random order removes most, not all, of the star-rating tilt")
 ax2.legend(frameon=False)
 fig2.tight_layout()
+
+
+# %% [markdown]
+# **How to read the figure.** For each position, how many more or fewer stars the hotel there has than its search's average. In Expedia's order the best hotels sit at the top (a strong tilt). Random order removes most of that tilt, but not all of it, which is why notebook 02 also reports curves adjusted for hotel attributes.
 
 # %% [markdown]
 # ## 5. Analysis sample and missing data

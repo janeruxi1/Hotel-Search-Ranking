@@ -16,6 +16,14 @@
 # **What it cannot do.** Expedia's own ranking cannot be scored: the data does not say what
 # order Expedia would have shown in these searches.
 
+
+# %% [markdown]
+# | | |
+# |---|---|
+# | **Question** | The ranking team proposed putting cheaper hotels first. Which ranking should go into an A/B test? |
+# | **Answer** | Not cheapest first: offline it loses to reviews first on both bookings and booking value. By the rule written beforehand, the ranking to test is reviews first. A blend of two model-based rankings beat it on both metrics, but it was found after looking, so it enters the test as an exploratory arm, not as a result. |
+# | **Next** | [Notebook 05](05_ab_test_design.ipynb) sizes the A/B test. |
+
 # %%
 import os
 import sys
@@ -234,6 +242,10 @@ out_path = write_metrics("04_policy_evaluation", record, SOURCE)
 print("wrote", out_path.relative_to(PROJECT_ROOT) if SOURCE == "real" else out_path.name)
 if SOURCE == "real":
     fig.savefig(FIGURES_DIR / "04_policy_evaluation.png", dpi=150, bbox_inches="tight")
+
+
+# %% [markdown]
+# **How to read the figure.** Left: expected bookings per 100 held-out searches under each ranking, with intervals. Middle: bookings against booking value; the grey line is the family of model blends, and a point up and to the right beats one down and to the left on both. Right: a check of the evaluator itself; if re-ordering changes booking the way the model says, points follow the diagonal. The slope is uncertain (its interval includes zero), which is why the decision goes to an online test.
 
 # %% [markdown]
 # ## Verdict
