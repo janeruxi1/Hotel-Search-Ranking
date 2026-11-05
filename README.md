@@ -37,7 +37,12 @@ From the [decision memo](reports/decision_memo.md):
   by the booking lift (114,487 per arm). The sizing discounts the offline lift because the check
   of its mechanism was inconclusive; the margin of the guardrail is a business decision.
 
-![A/B test power](reports/figures/05_ab_test_power.png)
+![Position effects](reports/figures/02_position_effects.png)
+
+*The key picture. Blue: clicks and bookings by position in Expedia's own ranking, where better
+hotels sit higher. Orange: the same in randomly ordered searches, where position is the only
+difference. The gap between them is the part of the top slots' advantage that belongs to the
+hotels, not the slots: a naive analysis overstates position about 3.4 times.*
 
 ## Which ranking to test
 
@@ -140,7 +145,10 @@ On searches that show a hotel in every slot from 1 to 30 (57% of searches in eac
   steeper (4.1% against 3.2% of the mean). For bookings the two estimates differ
   (0.021 against 0.008 points); with different samples I report both rather than force them to agree.
 
-![Position effects](reports/figures/02_position_effects.png)
+![A/B test power](reports/figures/05_ab_test_power.png)
+
+*Chance the test detects each booking lift as it grows; the dashed line is the size the 2%
+booking-value guardrail needs, which is what sets the test's length.*
 
 ## What drives the choice within a search
 
